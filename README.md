@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/WhiteySage/chattice/main/docs/assets/brand/chattice-logo.png"
+<img src="https://raw.githubusercontent.com/1whiteysage/chattice/main/docs/assets/brand/chattice-logo.png"
      alt="Chattice" width="320" />
 
 # Chattice
@@ -8,7 +8,7 @@ Async, typed event framework for Google Chat apps — aiogram-quality DX, Google
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://pypi.org/project/chattice/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Status](https://img.shields.io/badge/status-pre--1.0-orange)](#status)
-[![Discussions](https://img.shields.io/badge/discussions-questions%20%26%20help-blue)](https://github.com/WhiteySage/chattice/discussions)
+[![Discussions](https://img.shields.io/badge/discussions-questions%20%26%20help-blue)](https://github.com/1whiteysage/chattice/discussions)
 
 ```python
 from chattice import Dispatcher, F, Router
@@ -68,7 +68,7 @@ dispatcher.include_router(router)
 
 - **Not a Telegram framework.** No `chat_id`, no `CallbackQuery`, no
   `Update` hierarchy, no Telegram-style long polling (see the
-  [aiogram comparison](https://whiteysage.github.io/chattice/aiogram-comparison/)).
+  [aiogram comparison](https://1whiteysage.github.io/chattice/aiogram-comparison/)).
 - **Not a Google product.** Independent open-source project, not
   endorsed by Google.
 
@@ -174,13 +174,13 @@ async def reply(message: MessageEvent) -> None:
 
 ## Docs
 
-Start with [Installation](https://whiteysage.github.io/chattice/getting-started/installation/), the
-[5-minute Quickstart](https://whiteysage.github.io/chattice/getting-started/quickstart/), and the
-[Space → Thread → Message mental model](https://whiteysage.github.io/chattice/concepts/mental-model/). The
-[public API reference](https://whiteysage.github.io/chattice/public-api/), [Google mapping](https://whiteysage.github.io/chattice/reference/google-api-mapping/),
-the [debugging guide](https://whiteysage.github.io/chattice/guides/debugging/), and
-[aiogram comparison](https://whiteysage.github.io/chattice/aiogram-comparison/) are linked from the docs site.
-Runnable examples live in [`examples/`](https://github.com/WhiteySage/chattice/tree/main/examples).
+Start with [Installation](https://1whiteysage.github.io/chattice/getting-started/installation/), the
+[5-minute Quickstart](https://1whiteysage.github.io/chattice/getting-started/quickstart/), and the
+[Space → Thread → Message mental model](https://1whiteysage.github.io/chattice/concepts/mental-model/). The
+[public API reference](https://1whiteysage.github.io/chattice/public-api/), [Google mapping](https://1whiteysage.github.io/chattice/reference/google-api-mapping/),
+the [debugging guide](https://1whiteysage.github.io/chattice/guides/debugging/), and
+[aiogram comparison](https://1whiteysage.github.io/chattice/aiogram-comparison/) are linked from the docs site.
+Runnable examples live in [`examples/`](https://github.com/1whiteysage/chattice/tree/main/examples).
 
 ## Status
 
@@ -191,4 +191,4 @@ incompatible changes require a minor-version bump and upgrade notes. `chattice.e
 has no compatibility promise. `bot.raw.app()` / `bot.raw.user()` and raw event payloads
 follow Google's SDK and wire schema rather than the stable facade
 promise. **Not an official Google product** — independent open-source
-software, not endorsed by Google. MIT License, see [LICENSE](https://github.com/WhiteySage/chattice/blob/main/LICENSE).
+software, not endorsed by Google. MIT License, see [LICENSE](https://github.com/1whiteysage/chattice/blob/main/LICENSE).
