@@ -37,10 +37,10 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://whiteysage.github.io/chattice/"
-Source = "https://github.com/WhiteySage/chattice"
-Issues = "https://github.com/WhiteySage/chattice/issues"
-Changelog = "https://github.com/WhiteySage/chattice/blob/main/CHANGELOG.md"
+Documentation = "https://1whiteysage.github.io/chattice/"
+Source = "https://github.com/1whiteysage/chattice"
+Issues = "https://github.com/1whiteysage/chattice/issues"
+Changelog = "https://github.com/1whiteysage/chattice/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 fastapi = [
