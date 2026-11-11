@@ -17,6 +17,7 @@ that are naturally additive are the most welcome:
    ```bash
    uv sync --all-groups
    uv run python scripts/gen_sbom.py --check
+   uv run python scripts/sync_notices.py --check
    uv run pytest -q
    uv run mypy src tests
    uv run ruff check . && uv run ruff format --check .
@@ -37,6 +38,9 @@ that are naturally additive are the most welcome:
   `tests/fixtures/google_chat/interactions/README.md`.
 - Public API changes require typing,
   tests, docs, deliberate export, compatibility review.
+- Describe user-visible changes under `## [Unreleased]` in `CHANGELOG.md`.
+- Functions stay within the enforced limits (complexity 10, 12 branches,
+  50 statements). Split a function that trips one; do not suppress the rule.
 - Architectural changes (Dispatcher/Router/FSM contracts, new workflow
   engines, package splits, breaking API) require a lightweight design
   proposal first: Problem · Current behavior · Proposed API · Why the
@@ -47,6 +51,9 @@ that are naturally additive are the most welcome:
 
 MIT. By contributing you agree your contributions are licensed
 under it. No CLA required.
+
+Releases, dependency updates and the periodic routine are described in
+[MAINTAINING.md](MAINTAINING.md).
 
 ## Upstream Google changes
 

@@ -25,7 +25,7 @@ import enum
 import logging
 import math
 import types
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from typing import (
     Any,
     ClassVar,
@@ -68,38 +68,56 @@ def _encode_value(value: object) -> str:
     )
 
 
+def _decode_int(raw: str) -> object:
+    try:
+        return int(raw)
+    except ValueError as error:
+        raise ActionDataDecodeError(f"cannot decode {raw!r} as int") from error
+
+
+def _decode_float(raw: str) -> object:
+    try:
+        parsed = float(raw)
+    except ValueError as error:
+        raise ActionDataDecodeError(f"cannot decode {raw!r} as float") from error
+    if not math.isfinite(parsed):
+        raise ActionDataDecodeError(f"cannot decode {raw!r} as finite float")
+    return parsed
+
+
+def _decode_bool(raw: str) -> object:
+    if raw == "true":
+        return True
+    if raw == "false":
+        return False
+    raise ActionDataDecodeError(
+        f"cannot decode {raw!r} as bool (expected 'true'/'false')"
+    )
+
+
+def _decode_enum(raw: str, target: type[enum.Enum]) -> object:
+    # Canonical Enum codec — decode through the member VALUE so
+    # numeric-valued enums (IntEnum, value=1) round-trip as well.
+    for member in target:
+        if str(member.value) == raw:
+            return member
+    raise ActionDataDecodeError(f"cannot decode {raw!r} as {target.__name__}")
+
+
+_SCALAR_DECODERS: dict[type[object], Callable[[str], object]] = {
+    str: str,
+    int: _decode_int,
+    float: _decode_float,
+    bool: _decode_bool,
+}
+
+
 def _decode_value(raw: str, target: type[object]) -> object:
-    if target is str:
-        return raw
-    if target is int:
-        try:
-            return int(raw)
-        except ValueError as error:
-            raise ActionDataDecodeError(f"cannot decode {raw!r} as int") from error
-    if target is float:
-        try:
-            parsed = float(raw)
-        except ValueError as error:
-            raise ActionDataDecodeError(f"cannot decode {raw!r} as float") from error
-        if not math.isfinite(parsed):
-            raise ActionDataDecodeError(f"cannot decode {raw!r} as finite float")
-        return parsed
-    if target is bool:
-        if raw == "true":
-            return True
-        if raw == "false":
-            return False
-        raise ActionDataDecodeError(
-            f"cannot decode {raw!r} as bool (expected 'true'/'false')"
-        )
+    decode = _SCALAR_DECODERS.get(target)
+    if decode is not None:
+        return decode(raw)
     if isinstance(target, type) and issubclass(target, enum.Enum):
-        # Canonical Enum codec — decode through the member VALUE so
-        # numeric-valued enums (IntEnum, value=1) round-trip as well;
-        # the previous name-only call raised for them.
-        for member in target:
-            if str(member.value) == raw:
-                return member
-        raise ActionDataDecodeError(f"cannot decode {raw!r} as {target.__name__}")
+        return _decode_enum(raw, target)
     raise ActionDataDecodeError(f"unsupported ActionData field type {target!r}")
 
 

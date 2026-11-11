@@ -1,0 +1,53 @@
+name: Dependabot fixup
+
+# A Dependabot pull request that changes uv.lock would fail the SBOM and
+# notices checks, because both files are derived from the lock. This
+# regenerates them on the Dependabot branch and requests CI again.
+#
+# Safety: the job never installs or imports project dependencies — the
+# two scripts read uv.lock with the standard library — so no code from a
+# newly upgraded package runs with the write token.
+
+on:
+  pull_request:
+    paths:
+      - uv.lock
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  regenerate:
+    if: >-
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BRANCH: ${{ github.event.pull_request.head.ref }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          python-version: "3.12"
+          enable-cache: false
+      - name: Regenerate files derived from the lock
+        run: |
+          set -euo pipefail
+          uv run --no-project python scripts/gen_sbom.py
+          uv run --no-project python scripts/sync_notices.py
+          if git diff --quiet; then
+            echo "Derived files already match the lock."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Regenerate SBOM and third-party notices"
+          git push origin "HEAD:${BRANCH}"
+          # A push made with GITHUB_TOKEN does not start `pull_request`
+          # workflows; request the checks for the branch explicitly.
+          gh workflow run ci.yml --ref "${BRANCH}"

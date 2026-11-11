@@ -9,7 +9,11 @@ updates:
         patterns:
           - "*"
 
-  - package-ecosystem: pip
+  # `uv` updates pyproject.toml AND uv.lock, so `uv sync --locked` in CI
+  # can pass. In-range upgrades arrive as one weekly pull request from
+  # the "Dependency refresh" workflow; Dependabot covers what that cannot:
+  # upgrades that need a wider version range, and security updates.
+  - package-ecosystem: uv
     directory: /
     schedule:
       interval: weekly

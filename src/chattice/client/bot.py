@@ -354,6 +354,17 @@ class Bot:
         if self._closed:
             return
         self._closed = True
+        await self._settle_initialization()
+        await self._close_transports()
+
+    async def _settle_initialization(self) -> None:
+        """Wait for credential resolution and client construction in flight.
+
+        Each task either completes and publishes (then its transport is
+        closed) or observes ``_closed`` and raises — both are
+        deterministic. ``shield`` keeps OUR cancellation from breaking
+        the shared task for other waiters.
+        """
         for task in (
             self._credential_task,
             self._user_credential_task,
@@ -362,27 +373,23 @@ class Bot:
         ):
             if task is None:
                 continue
-            # In-flight resolution/construction either completes and
-            # publishes (then we close it below) or observes _closed and
-            # raises — both are deterministic; shield keeps OUR
-            # cancellation from breaking the shared task for other
-            # waiters.
             try:
                 await asyncio.shield(task)
             except asyncio.CancelledError:
                 raise
             except ChatAPIError:
                 pass  # aborted by our own close — nothing to close
-        # Close every initialized client exactly once. The injected test
-        # transport may back both clients; each transport is closed once.
-        closed_transports: set[object] = set()
+
+    async def _close_transports(self) -> None:
+        """Close every initialized client's transport exactly once.
+
+        The injected test transport may back both clients.
+        """
+        transports: dict[int, object] = {}
         for client in (self._client, self._user_client):
-            if client is None:
-                continue
-            transport = client.transport
-            if transport in closed_transports:
-                continue
-            closed_transports.add(transport)
+            if client is not None:
+                transports.setdefault(id(client.transport), client.transport)
+        for transport in transports.values():
             closer = getattr(transport, "close", None)
             if closer is None:
                 continue

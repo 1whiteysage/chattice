@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import operator
 import re
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any, Final, Literal, TypeAlias, cast
 
@@ -150,6 +151,23 @@ class MagicField(MagicExpression):
         return value is not MISSING and bool(value)
 
 
+_COMPARISONS: dict[str, Callable[[Any, Any], object]] = {
+    "eq": operator.eq,
+    "ne": operator.ne,
+    "lt": operator.lt,
+    "le": operator.le,
+    "gt": operator.gt,
+    "ge": operator.ge,
+}
+# (actual, expected) -> match; a wrong operand type means "no match".
+_METHODS: dict[str, Callable[[Any, Any], object]] = {
+    "contains": lambda actual, expected: expected in actual,
+    "in": lambda actual, expected: actual in expected,
+    "startswith": lambda actual, expected: actual.startswith(expected),
+    "endswith": lambda actual, expected: actual.endswith(expected),
+}
+
+
 @dataclass(frozen=True, slots=True)
 class _ComparisonExpression(MagicExpression):
     operation: Literal["eq", "ne", "lt", "le", "gt", "ge"]
@@ -161,17 +179,7 @@ class _ComparisonExpression(MagicExpression):
         if actual is MISSING:
             return False
         try:
-            if self.operation == "eq":
-                return bool(actual == self.expected)
-            if self.operation == "ne":
-                return bool(actual != self.expected)
-            if self.operation == "lt":
-                return bool(actual < self.expected)  # type: ignore[operator]
-            if self.operation == "le":
-                return bool(actual <= self.expected)  # type: ignore[operator]
-            if self.operation == "gt":
-                return bool(actual > self.expected)  # type: ignore[operator]
-            return bool(actual >= self.expected)  # type: ignore[operator]
+            return bool(_COMPARISONS[self.operation](actual, self.expected))
         except TypeError:
             return False
 
@@ -193,21 +201,13 @@ class _MethodExpression(MagicExpression):
         if self.operation == "is":
             return actual is self.expected
         if self.operation == "regexp":
-            if not isinstance(actual, str):
-                return False
             pattern = self.expected
-            if not isinstance(pattern, re.Pattern):
+            if not isinstance(actual, str) or not isinstance(pattern, re.Pattern):
                 return False
             # re.match semantics: anchored at the start of the value.
             return pattern.match(actual) is not None
         try:
-            if self.operation == "contains":
-                return self.expected in actual  # type: ignore[operator]
-            if self.operation == "in":
-                return actual in self.expected  # type: ignore[operator]
-            if self.operation == "startswith":
-                return bool(actual.startswith(self.expected))  # type: ignore[attr-defined]
-            return bool(actual.endswith(self.expected))  # type: ignore[attr-defined]
+            return bool(_METHODS[self.operation](actual, self.expected))
         except (AttributeError, TypeError):
             return False
 

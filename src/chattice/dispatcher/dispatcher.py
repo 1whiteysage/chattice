@@ -78,6 +78,42 @@ class _DispatchOutcome:
     result: object = None
 
 
+async def _observer_matches(
+    observer: EventObserver, event: Event, data: dict[str, object]
+) -> bool:
+    """Evaluate observer-wide filters; a failing filter is tagged as such."""
+    try:
+        return bool(await evaluate_filters(observer.filters, event, data))
+    except (SkipHandler, StopPropagation):
+        raise
+    except Exception as exc:
+        _attach_failure_context(exc, stage="filter")
+        raise
+
+
+# Event class -> the observer that receives it. Action, command and
+# system command events are routed by their own rules.
+_EVENT_OBSERVERS: tuple[tuple[type[Event], str], ...] = (
+    (MessageEvent, "message"),
+    (AddedToSpaceEvent, "added_to_space"),
+    (RemovedFromSpaceEvent, "removed_from_space"),
+    (WidgetUpdatedEvent, "widget_updated"),
+    (AppHomeEvent, "app_home"),
+    (FormSubmitEvent, "form_submit"),
+    (UnknownEvent, "unknown_event"),
+    (ErrorEvent, "error"),
+)
+_DIALOG_OBSERVERS: dict[str, str] = {
+    DialogEventType.SUBMIT_DIALOG.value: "dialog_submit",
+    DialogEventType.CANCEL_DIALOG.value: "dialog_cancel",
+}
+_COMMAND_OBSERVERS: dict[CommandKind, str] = {
+    CommandKind.MESSAGE_ACTION: "message_action",
+    CommandKind.SLASH_COMMAND: "slash_command",
+    CommandKind.QUICK_COMMAND: "quick_command",
+}
+
+
 class Dispatcher(Router):
     """Root router and transport-independent event feed."""
 
@@ -292,8 +328,7 @@ class Dispatcher(Router):
     ) -> _DispatchOutcome:
         for router_index, (router, middleware) in enumerate(self._walk()):
             observer = self._observer(router, observer_name)
-            handlers = observer.handlers
-            if not handlers:
+            if not observer.handlers:
                 continue
             _routing_logger.debug(
                 "observer selected: router=%s observer=%s router_path=router[%d]",
@@ -303,82 +338,30 @@ class Dispatcher(Router):
             )
             observer_data = dict(data)
             try:
-                matches = await evaluate_filters(observer.filters, event, observer_data)
+                matches = await _observer_matches(observer, event, observer_data)
             except SkipHandler:
                 continue
             except StopPropagation:
                 return _DispatchOutcome(stopped=True)
-            except Exception as exc:
-                _attach_failure_context(exc, stage="filter")
-                raise
             if not matches:
                 continue
-            for handler in handlers:
+            route = f"router={router.name} observer={observer_name}"
+            for handler in observer.handlers:
                 candidate_data = dict(observer_data)
                 try:
-                    try:
-                        matches = await evaluate_filters(
-                            handler.filters, event, candidate_data
-                        )
-                    except Exception as exc:
-                        _attach_failure_context(
-                            exc,
-                            stage="filter",
-                            handler=handler_qualified_name(handler.callback),
-                        )
-                        raise
-                    if not matches:
-                        continue
-                    # `handler_started` must be visible BEFORE the callback
-                    # runs: a hung handler must not look like silence.
-                    _routing_logger.debug(
-                        "handler_selected: router=%s observer=%s handler=%s "
-                        "router_path=router[%d]",
-                        router.name,
-                        observer_name,
-                        handler_qualified_name(handler.callback),
-                        router_index,
+                    ran, result = await self._run_candidate(
+                        handler, middleware, event, candidate_data, route, router_index
                     )
-                    _routing_logger.info(
-                        "handler_started: handler=%s",
-                        handler_qualified_name(handler.callback),
-                    )
-                    await _maybe_hook(
-                        self._observability_hooks,
-                        "before_handler",
-                        event,
-                        candidate_data,
-                        handler_qualified_name(handler.callback),
-                    )
-                    started_at = time.perf_counter()
-                    result = await self._invoke(
-                        handler, middleware, event, candidate_data
-                    )
-                    duration_ms = (time.perf_counter() - started_at) * 1000
-                    slow_handler_ms = self._runtime_diagnostics.slow_handler_ms
-                    if slow_handler_ms is not None and duration_ms > slow_handler_ms:
-                        _runtime_logger.warning(
-                            "slow handler: handler=%s duration_ms=%.1f",
-                            handler_qualified_name(handler.callback),
-                            duration_ms,
-                        )
                 except SkipHandler:
                     continue
                 except StopPropagation:
                     return _DispatchOutcome(stopped=True)
-                except Exception as exc:
-                    if _failure_stage(exc) == "unknown":
-                        # handler/DI exceptions are tagged inside _invoke;
-                        # anything untagged escaped a middleware frame.
-                        _attach_failure_context(
-                            exc,
-                            stage="middleware",
-                            handler=handler_qualified_name(handler.callback),
-                        )
-                    raise
+                if not ran:
+                    continue
+                name = handler_qualified_name(handler.callback)
                 _routing_logger.info(
                     "handler_completed: handler=%s result_type=%s",
-                    handler_qualified_name(handler.callback),
+                    name,
                     type(result).__name__,
                 )
                 await _maybe_hook(
@@ -386,11 +369,64 @@ class Dispatcher(Router):
                     "after_handler",
                     event,
                     candidate_data,
-                    handler_qualified_name(handler.callback),
+                    name,
                     result,
                 )
                 return _DispatchOutcome(handled=True, result=result)
         return _DispatchOutcome()
+
+    async def _run_candidate(
+        self,
+        handler: HandlerObject,
+        middleware: tuple[MiddlewareLike, ...],
+        event: Event,
+        data: dict[str, object],
+        route: str,
+        router_index: int,
+    ) -> tuple[bool, object]:
+        """Run ``handler`` if its filters match: ``(ran, result)``.
+
+        Failures are tagged with the stage they came from; ``SkipHandler``
+        and ``StopPropagation`` pass through for the caller to act on.
+        """
+        name = handler_qualified_name(handler.callback)
+        try:
+            try:
+                matches = await evaluate_filters(handler.filters, event, data)
+            except Exception as exc:
+                _attach_failure_context(exc, stage="filter", handler=name)
+                raise
+            if not matches:
+                return False, None
+            # `handler_started` must be visible BEFORE the callback
+            # runs: a hung handler must not look like silence.
+            _routing_logger.debug(
+                "handler_selected: %s handler=%s router_path=router[%d]",
+                route,
+                name,
+                router_index,
+            )
+            _routing_logger.info("handler_started: handler=%s", name)
+            await _maybe_hook(
+                self._observability_hooks, "before_handler", event, data, name
+            )
+            started_at = time.perf_counter()
+            result = await self._invoke(handler, middleware, event, data)
+            duration_ms = (time.perf_counter() - started_at) * 1000
+            slow_handler_ms = self._runtime_diagnostics.slow_handler_ms
+            if slow_handler_ms is not None and duration_ms > slow_handler_ms:
+                _runtime_logger.warning(
+                    "slow handler: handler=%s duration_ms=%.1f", name, duration_ms
+                )
+        except (SkipHandler, StopPropagation):
+            raise
+        except Exception as exc:
+            if _failure_stage(exc) == "unknown":
+                # handler/DI exceptions are tagged inside _invoke;
+                # anything untagged escaped a middleware frame.
+                _attach_failure_context(exc, stage="middleware", handler=name)
+            raise
+        return True, result
 
     @staticmethod
     def _observer(router: Router, name: str) -> EventObserver:
@@ -400,45 +436,21 @@ class Dispatcher(Router):
         return observer
 
     def _specific_observer_names(self, event: Event) -> tuple[str, ...]:
-        if isinstance(event, MessageEvent):
-            return ("message",)
         if isinstance(event, ActionEvent):
-            if event.dialog is not None and (
-                event.dialog.type == DialogEventType.SUBMIT_DIALOG
-            ):
-                return ("dialog_submit",)
-            if event.dialog is not None and (
-                event.dialog.type == DialogEventType.CANCEL_DIALOG
-            ):
-                return ("dialog_cancel",)
-            return ("action",)
+            dialog_type = event.dialog.type if event.dialog is not None else None
+            return (_DIALOG_OBSERVERS.get(str(dialog_type), "action"),)
         if isinstance(event, CommandEvent):
-            if event.kind is CommandKind.MESSAGE_ACTION:
-                return ("message_action", "command")
-            if event.kind is CommandKind.SLASH_COMMAND:
-                return ("slash_command", "command")
-            if event.kind is CommandKind.QUICK_COMMAND:
-                return ("quick_command", "command")
-            return ()
-        if isinstance(event, AddedToSpaceEvent):
-            return ("added_to_space",)
-        if isinstance(event, RemovedFromSpaceEvent):
-            return ("removed_from_space",)
+            if event.kind is None:
+                return ()
+            return (_COMMAND_OBSERVERS[event.kind], "command")
         if isinstance(event, SystemCommandEvent):
             # Developer Preview: typed routing only after explicit opt-in.
             if PreviewFeature.MESSAGE_STREAMING not in self._preview_capabilities:
                 return ()
             return ("system_command",)
-        if isinstance(event, WidgetUpdatedEvent):
-            return ("widget_updated",)
-        if isinstance(event, AppHomeEvent):
-            return ("app_home",)
-        if isinstance(event, FormSubmitEvent):
-            return ("form_submit",)
-        if isinstance(event, UnknownEvent):
-            return ("unknown_event",)
-        if isinstance(event, ErrorEvent):
-            return ("error",)
+        for event_type, observer_name in _EVENT_OBSERVERS:
+            if isinstance(event, event_type):
+                return (observer_name,)
         return ()
 
     @staticmethod

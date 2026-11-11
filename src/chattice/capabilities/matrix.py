@@ -96,6 +96,19 @@ _RESPONSE_DESCRIPTIONS: dict[ResponseCapability, str] = {
 }
 
 
+def _action_capabilities(event: ActionEvent) -> set[ResponseCapability]:
+    """How a card click can be answered, from where the card lives."""
+    capabilities: set[ResponseCapability] = set()
+    if event.wire_format is WireFormat.ADDON and event.source is ActionSource.HOME:
+        # Add-on homepage card click: answered with updateCard.
+        capabilities.add(ResponseCapability.APP_HOME)
+    if event.sender_type == "BOT":
+        capabilities.add(ResponseCapability.CARD_UPDATE_BOT)
+    elif event.sender_type == "HUMAN":
+        capabilities.add(ResponseCapability.CARD_UPDATE_USER)
+    return capabilities
+
+
 class ResponseCapabilities:
     """An immutable response-channel capability set with require() guards."""
 
@@ -150,16 +163,7 @@ class ResponseCapabilities:
         if isinstance(event, WidgetUpdatedEvent):
             capabilities.add(ResponseCapability.UPDATE_WIDGET)
         if isinstance(event, ActionEvent):
-            if (
-                event.wire_format is WireFormat.ADDON
-                and event.source is ActionSource.HOME
-            ):
-                # Add-on homepage card click: answered with updateCard.
-                capabilities.add(ResponseCapability.APP_HOME)
-            if event.sender_type == "BOT":
-                capabilities.add(ResponseCapability.CARD_UPDATE_BOT)
-            elif event.sender_type == "HUMAN":
-                capabilities.add(ResponseCapability.CARD_UPDATE_USER)
+            capabilities.update(_action_capabilities(event))
         if isinstance(event, MessageEvent) and event.matched_url is not None:
             capabilities.add(ResponseCapability.CARD_UPDATE_USER)
         return cls(capabilities)

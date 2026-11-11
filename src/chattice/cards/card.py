@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, cast
 
@@ -156,143 +156,143 @@ class Section:
         Unsupported SDK widget kinds become ``RawWidget`` instead of raising
         or being silently dropped.
         """
-        widgets: list[Widget] = []
-        for widget in proto.widgets:
-            which = widget._pb.WhichOneof("data")
-            if which == "text_paragraph":
-                tp = widget.text_paragraph
-                widgets.append(TextParagraph(tp.text, max_lines=tp.max_lines or None))
-            elif which == "divider":
-                widgets.append(Divider())
-            elif which == "button_list":
-                bl = widget.button_list
-                rebuilt: list[Button] = []
-                for b in bl.buttons:
-                    click_kind = b.on_click._pb.WhichOneof("data")
-                    if click_kind == "action":
-                        action_proto = b.on_click.action
-                        rebuilt.append(
-                            Button(
-                                b.text,
-                                action=action_proto.function or None,
-                                parameters={
-                                    p.key: p.value for p in action_proto.parameters
-                                },
-                                interaction=(
-                                    action_proto.interaction.name
-                                    if action_proto.interaction
-                                    else None
-                                ),
-                                disabled=b.disabled or False,
-                                alt_text=b.alt_text or None,
-                                # full round-trip — every facade-
-                                # supported Button field is preserved.
-                                required_widgets=tuple(action_proto.required_widgets),
-                                persist_values=bool(action_proto.persist_values),
-                                load_indicator=(
-                                    action_proto.load_indicator.name == "SPINNER"
-                                ),
-                                type=_button_type_name(b.type),
-                                color=(
-                                    _color_to_mapping(b.color)
-                                    if b._pb.HasField("color")
-                                    else None
-                                ),
-                            )
-                        )
-                    elif click_kind == "open_link":
-                        rebuilt.append(
-                            Button(
-                                b.text,
-                                open_link=b.on_click.open_link.url,
-                                disabled=b.disabled or False,
-                                alt_text=b.alt_text or None,
-                                type=_button_type_name(b.type),
-                            )
-                        )
-                    else:
-                        raise NotImplementedError(
-                            f"Button onClick kind {click_kind!r} is not rebuildable"
-                        )
-                widgets.append(ButtonList(buttons=rebuilt))
-            elif which == "text_input":
-                ti = widget.text_input
-                validation = None
-                if ti.validation.character_limit or ti.validation.input_type:
-                    validation = Validation(
-                        character_limit=ti.validation.character_limit or None,
-                        input_type=(
-                            TextInputType(ti.validation.input_type.name)
-                            if ti.validation.input_type
-                            else None
-                        ),
-                    )
-                widgets.append(
-                    TextInput(
-                        name=ti.name,
-                        label=ti.label,
-                        hint_text=ti.hint_text or None,
-                        value=ti.value or None,
-                        validation=validation,
-                    )
-                )
-            elif which == "selection_input":
-                si = widget.selection_input
-                widgets.append(
-                    SelectionInput(
-                        name=si.name,
-                        label=si.label,
-                        items=tuple(
-                            {"text": i.text, "value": i.value} for i in si.items
-                        ),
-                        # preserve the dynamic-selection surface.
-                        external_data_source=(
-                            Action(
-                                function=si.external_data_source.function or None,
-                                parameters={
-                                    p.key: p.value
-                                    for p in si.external_data_source.parameters
-                                },
-                            )
-                            if si._pb.HasField("external_data_source")
-                            else None
-                        ),
-                        multi_select_max_selected_items=(
-                            si.multi_select_max_selected_items or None
-                        ),
-                        multi_select_min_query_length=(
-                            si.multi_select_min_query_length or None
-                        ),
-                    )
-                )
-            elif which == "date_time_picker":
-                dp = widget.date_time_picker
-                widgets.append(
-                    DateTimePicker(
-                        name=dp.name,
-                        label=dp.label,
-                        value_ms_epoch=dp.value_ms_epoch or None,
-                        timezone_offset_date=dp.timezone_offset_date or None,
-                    )
-                )
-            elif which == "image":
-                image = widget.image
-                on_click: Action | OpenLink | None = None
-                click_kind = image.on_click._pb.WhichOneof("data")
-                if click_kind == "action":
-                    on_click = Action.from_proto(image.on_click.action)
-                elif click_kind == "open_link":
-                    on_click = OpenLink.from_proto(image.on_click.open_link)
-                widgets.append(
-                    Image(
-                        image_url=image.image_url,
-                        alt_text=image.alt_text or None,
-                        on_click=on_click,
-                    )
-                )
-            else:
-                widgets.append(RawWidget(_proto_json(widget)))
+        widgets = [
+            _WIDGET_REBUILDERS.get(widget._pb.WhichOneof("data"), _raw_widget)(widget)
+            for widget in proto.widgets
+        ]
         return cls(header=proto.header or None, widgets=widgets)
+
+
+def _text_paragraph_from(widget: Any) -> Widget:
+    paragraph = widget.text_paragraph
+    return TextParagraph(paragraph.text, max_lines=paragraph.max_lines or None)
+
+
+def _divider_from(widget: Any) -> Widget:
+    del widget
+    return Divider()
+
+
+def _button_from(button: Any) -> Button:
+    click_kind = button.on_click._pb.WhichOneof("data")
+    if click_kind == "open_link":
+        return Button(
+            button.text,
+            open_link=button.on_click.open_link.url,
+            disabled=button.disabled or False,
+            alt_text=button.alt_text or None,
+            type=_button_type_name(button.type),
+        )
+    if click_kind != "action":
+        raise NotImplementedError(
+            f"Button onClick kind {click_kind!r} is not rebuildable"
+        )
+    action = button.on_click.action
+    # Full round-trip: every facade-supported Button field is preserved.
+    return Button(
+        button.text,
+        action=action.function or None,
+        parameters={p.key: p.value for p in action.parameters},
+        interaction=action.interaction.name if action.interaction else None,
+        disabled=button.disabled or False,
+        alt_text=button.alt_text or None,
+        required_widgets=tuple(action.required_widgets),
+        persist_values=bool(action.persist_values),
+        load_indicator=action.load_indicator.name == "SPINNER",
+        type=_button_type_name(button.type),
+        color=(
+            _color_to_mapping(button.color) if button._pb.HasField("color") else None
+        ),
+    )
+
+
+def _button_list_from(widget: Any) -> Widget:
+    return ButtonList(
+        buttons=[_button_from(button) for button in widget.button_list.buttons]
+    )
+
+
+def _text_input_from(widget: Any) -> Widget:
+    text_input = widget.text_input
+    rule = text_input.validation
+    validation = None
+    if rule.character_limit or rule.input_type:
+        validation = Validation(
+            character_limit=rule.character_limit or None,
+            input_type=TextInputType(rule.input_type.name) if rule.input_type else None,
+        )
+    return TextInput(
+        name=text_input.name,
+        label=text_input.label,
+        hint_text=text_input.hint_text or None,
+        value=text_input.value or None,
+        validation=validation,
+    )
+
+
+def _selection_input_from(widget: Any) -> Widget:
+    selection = widget.selection_input
+    # Preserve the dynamic-selection surface.
+    source = None
+    if selection._pb.HasField("external_data_source"):
+        source = Action(
+            function=selection.external_data_source.function or None,
+            parameters={
+                p.key: p.value for p in selection.external_data_source.parameters
+            },
+        )
+    return SelectionInput(
+        name=selection.name,
+        label=selection.label,
+        items=tuple({"text": i.text, "value": i.value} for i in selection.items),
+        external_data_source=source,
+        multi_select_max_selected_items=(
+            selection.multi_select_max_selected_items or None
+        ),
+        multi_select_min_query_length=selection.multi_select_min_query_length or None,
+    )
+
+
+def _date_time_picker_from(widget: Any) -> Widget:
+    picker = widget.date_time_picker
+    return DateTimePicker(
+        name=picker.name,
+        label=picker.label,
+        value_ms_epoch=picker.value_ms_epoch or None,
+        timezone_offset_date=picker.timezone_offset_date or None,
+    )
+
+
+def _image_from(widget: Any) -> Widget:
+    image = widget.image
+    on_click: Action | OpenLink | None = None
+    click_kind = image.on_click._pb.WhichOneof("data")
+    if click_kind == "action":
+        on_click = Action.from_proto(image.on_click.action)
+    elif click_kind == "open_link":
+        on_click = OpenLink.from_proto(image.on_click.open_link)
+    return Image(
+        image_url=image.image_url,
+        alt_text=image.alt_text or None,
+        on_click=on_click,
+    )
+
+
+def _raw_widget(widget: Any) -> Widget:
+    """An SDK widget kind the facade does not model, kept losslessly."""
+    return RawWidget(_proto_json(widget))
+
+
+# Widget oneof case -> facade rebuilder; any other case stays a RawWidget.
+_WIDGET_REBUILDERS: dict[str | None, Callable[[Any], Widget]] = {
+    "text_paragraph": _text_paragraph_from,
+    "divider": _divider_from,
+    "button_list": _button_list_from,
+    "text_input": _text_input_from,
+    "selection_input": _selection_input_from,
+    "date_time_picker": _date_time_picker_from,
+    "image": _image_from,
+}
 
 
 @dataclass(frozen=True, slots=True)
