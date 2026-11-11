@@ -1,8 +1,10 @@
 name: Google upstream watch
 
 # Compares the reviewed baseline with the official Google Chat discovery
-# document, release feed, and Python SDK releases. A change opens one issue;
-# no dependency or source update is applied automatically.
+# document, release feed, and Python SDK releases. scripts/upstream_report.py
+# names what changed (unwrapped methods, added/removed methods, scopes and
+# schema fields, new release notes, SDK releases); that report is the body of
+# one tracked issue. No dependency or source update is applied automatically.
 
 on:
   schedule:
@@ -22,151 +24,62 @@ jobs:
         with:
           python-version: "3.11"
           enable-cache: false
-      - name: Compare official Google sources with the reviewed baseline
+      - name: Report official Google changes since the reviewed baseline
+        id: report
+        run: |
+          status=0
+          # GitHub rejects issue bodies above 65536 characters.
+          uv run python scripts/upstream_report.py \
+            --save-discovery .discovery/chat-v1.json \
+            --output .discovery/upstream-report.md \
+            --max-chars 60000 || status=$?
+          # 0: nothing to review. 1: review needed. Anything else, or a
+          # missing report, means the monitor itself failed.
+          if [ "$status" -gt 1 ] || [ ! -s .discovery/upstream-report.md ]; then
+            echo "::error::scripts/upstream_report.py failed (exit $status)"
+            exit 1
+          fi
+          echo "review=$status" >> "$GITHUB_OUTPUT"
+          cat .discovery/upstream-report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Sync the tracked issue with the report
         env:
           GH_TOKEN: ${{ github.token }}
+          ISSUE_TITLE: Google Chat upstream changed
+          REVIEW: ${{ steps.report.outputs.review }}
         run: |
-          uv run python - <<'PY'
-          import hashlib
-          import json
-          import subprocess
-          import urllib.request
-          from pathlib import Path
+          gh label create upstream \
+            --description "Official Google API or SDK change requiring review" \
+            --color 0E8A16 \
+            --force
+          # Fetched and filtered in two commands so that a failing `gh` stops
+          # the step instead of looking like "no tracked issue".
+          issues="$(gh issue list --label upstream --state all --limit 100 \
+            --json number,state,title)"
+          tracked="$(jq -r --arg title "$ISSUE_TITLE" \
+            'map(select(.title == $title)) | first | select(.) | "\(.number) \(.state)"' \
+            <<<"$issues")"
+          number="${tracked%% *}"
+          state="${tracked##* }"
 
-          BASELINE_PATH = Path(".github/upstream-baseline.json")
-          DISCOVERY_URL = "https://chat.googleapis.com/$discovery/rest?version=v1"
-          RELEASE_FEED_URL = "https://developers.google.com/feeds/chat-release-notes.xml"
-          ISSUE_TITLE = "Google Chat upstream changed"
-
-
-          def fetch(url: str) -> bytes:
-              request = urllib.request.Request(
-                  url,
-                  headers={"User-Agent": "chattice-upstream-watch/1.0"},
-              )
-              with urllib.request.urlopen(request, timeout=60) as response:
-                  return response.read()
-
-
-          def sha256(url: str) -> str:
-              return hashlib.sha256(fetch(url)).hexdigest()
-
-
-          def json_sha256(url: str) -> str:
-              payload = json.loads(fetch(url))
-              canonical = json.dumps(
-                  payload,
-                  sort_keys=True,
-                  separators=(",", ":"),
-                  ensure_ascii=False,
-              ).encode()
-              return hashlib.sha256(canonical).hexdigest()
-
-
-          def pypi_latest(package: str) -> str:
-              data = json.loads(fetch(f"https://pypi.org/pypi/{package}/json"))
-              return data["info"]["version"]
-
-
-          def gh(*args: str, capture: bool = False) -> str:
-              result = subprocess.run(
-                  ["gh", *args],
-                  check=True,
-                  text=True,
-                  capture_output=capture,
-              )
-              return result.stdout.strip() if capture else ""
-
-
-          baseline = json.loads(BASELINE_PATH.read_text())
-          Path(".discovery").mkdir(exist_ok=True)
-          Path(".discovery/chat-v1.json").write_bytes(fetch(DISCOVERY_URL))
-          current = {
-              "chat_discovery_sha256": json_sha256(DISCOVERY_URL),
-              "chat_release_feed_sha256": sha256(RELEASE_FEED_URL),
-              "google_apps_card": pypi_latest("google-apps-card"),
-              "google_apps_chat": pypi_latest("google-apps-chat"),
-              "google_auth": pypi_latest("google-auth"),
-              "google_cloud_pubsub": pypi_latest("google-cloud-pubsub"),
-          }
-          changed = [key for key in current if current[key] != baseline.get(key)]
-
-          gh(
-              "label",
-              "create",
-              "upstream",
-              "--description",
-              "Official Google API or SDK change requiring review",
-              "--color",
-              "0E8A16",
-              "--force",
-          )
-          issues = json.loads(
-              gh(
-                  "issue",
-                  "list",
-                  "--label",
-                  "upstream",
-                  "--state",
-                  "all",
-                  "--limit",
-                  "100",
-                  "--json",
-                  "number,state,title",
-                  capture=True,
-              )
-          )
-          tracked = next((item for item in issues if item["title"] == ISSUE_TITLE), None)
-
-          if changed:
-              rows = ["| Source | Reviewed | Current |", "| --- | --- | --- |"]
-              for key in current:
-                  marker = " **changed**" if key in changed else ""
-                  rows.append(
-                      f"| `{key}` | `{baseline.get(key, 'missing')}` | "
-                      f"`{current[key]}`{marker} |"
-                  )
-              body = "\n".join(
-                  [
-                      "An official Google source differs from the reviewed baseline.",
-                      "",
-                      *rows,
-                      "",
-                      "Review the upstream change, update compatibility tests and "
-                      "documentation when needed, then update "
-                      "`.github/upstream-baseline.json`.",
-                  ]
-              )
-              if tracked:
-                  number = str(tracked["number"])
-                  gh("issue", "edit", number, "--body", body)
-                  if tracked["state"] == "CLOSED":
-                      gh("issue", "reopen", number)
-              else:
-                  gh(
-                      "issue",
-                      "create",
-                      "--title",
-                      ISSUE_TITLE,
-                      "--label",
-                      "upstream",
-                      "--body",
-                      body,
-                  )
-              print("Changed:", ", ".join(changed))
-          else:
-              if tracked and tracked["state"] == "OPEN":
-                  number = str(tracked["number"])
-                  gh(
-                      "issue",
-                      "comment",
-                      number,
-                      "--body",
-                      "The reviewed baseline now matches all monitored sources.",
-                  )
-                  gh("issue", "close", number)
-              print("No upstream changes detected.")
-          PY
+          if [ "$REVIEW" = "1" ]; then
+            if [ -n "$number" ]; then
+              gh issue edit "$number" --body-file .discovery/upstream-report.md
+              if [ "$state" = "CLOSED" ]; then
+                gh issue reopen "$number"
+              fi
+            else
+              gh issue create \
+                --title "$ISSUE_TITLE" \
+                --label upstream \
+                --body-file .discovery/upstream-report.md
+            fi
+          elif [ -n "$number" ] && [ "$state" = "OPEN" ]; then
+            gh issue comment "$number" \
+              --body "The reviewed baseline now matches all monitored sources."
+            gh issue close "$number"
+          else
+            echo "No upstream changes detected."
+          fi
       - name: Verify operation registry against the discovery document
         run: |
           uv run python scripts/verify_registry.py .discovery/chat-v1.json

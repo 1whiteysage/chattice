@@ -55,7 +55,10 @@ and ships Developer Preview features continuously. The documented public
 surface changes deliberately, so every upstream change follows one protocol:
 
 1. An update PR arrives from dependabot (weekly, `google-sdks` group)
-   or from the weekly `upstream-check` workflow's `upstream` issue.
+   or from the daily `upstream-check` workflow's `upstream` issue. The
+   issue body is the output of `scripts/upstream_report.py`: unwrapped
+   methods needing triage, discovery methods/scopes/fields added or
+   removed, new release notes, and SDK releases.
 2. CI runs the full suite, mypy/ruff, and the golden fixtures.
 3. Wire analysis of the SDK diff:
    - a new event FIELD → keep it lossless (`raw`), add a round-trip
@@ -65,7 +68,11 @@ surface changes deliberately, so every upstream change follows one protocol:
      capabilities matrix;
    - a breaking change → P0 issue, a Chattice semver decision (rare).
 4. Update fixtures (reviewed), docs (mapping/capabilities), and the
-   compatibility revision.
+   compatibility revision. Register each new method or add it to
+   `.github/upstream-allowlist.json` with a one-line reason, then run
+   `uv run python scripts/upstream_report.py --update-baseline` and
+   commit the rewritten `.github/upstream-baseline.json` and
+   `.github/upstream-snapshot.json`.
 5. Pre-release: run every example (the `examples/docs/from_zero.py`
    journey plus the bots/scenarios).
 

@@ -1,6 +1,7 @@
 """Capability model: response channel, outbound operations, preview features."""
 
 from .matrix import (
+    DEVELOPER_PREVIEW_FEATURES,
     PREVIEW_APP_COMMAND_TYPES,
     CapabilityNotSupported,
     PreviewCapabilities,
@@ -13,6 +14,7 @@ from .operations import AuthPath, ExecutionVariant, Operation, OperationSpec, sc
 from .registry import REGISTRY, OperationRegistry
 
 __all__ = [
+    "DEVELOPER_PREVIEW_FEATURES",
     "PREVIEW_APP_COMMAND_TYPES",
     "REGISTRY",
     "AuthPath",

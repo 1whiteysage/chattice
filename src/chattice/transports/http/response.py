@@ -55,7 +55,9 @@ class WidgetAutocomplete:
 
     Google's UPDATE_WIDGET response type answers a WIDGET_UPDATED
     autocomplete query. Each suggestion becomes a SelectionItem with the
-    given text.
+    given text. In the add-on payload family the suggestion text is also
+    the item's submitted value, and ``widget_id`` is not sent (the
+    response applies to the widget that asked).
     """
 
     widget_id: str
@@ -81,9 +83,14 @@ class RequestConfigResponse:
 
     The missing typed DX for a wire shape previously reachable only
     through RawInteractionResponse.
+
+    ``resource`` is the display name of the service the user connects
+    (for example ``"Example Account"``). Only the add-on payload family
+    shows it, in the basic authorization prompt, and requires it there.
     """
 
     auth_url: str
+    resource: str | None = None
 
     def to_dict(self) -> dict[str, object]:
         return {

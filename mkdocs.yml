@@ -36,6 +36,7 @@ nav:
       - Routing & State: guides/routing-state.md
       - Workspace Events: guides/workspace-events.md
       - HTTP vs Pub/Sub: guides/transports.md
+      - Workspace add-ons: guides/workspace-addons.md
       - Auth & Capabilities: guides/auth-capabilities.md
       - Advanced Google APIs: guides/advanced-apis.md
       - Debugging: guides/debugging.md

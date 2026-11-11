@@ -5,7 +5,7 @@
 
 Async, typed event framework for Google Chat apps — aiogram-quality DX, Google-native semantics.
 
-[![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://pypi.org/project/chattice/)
+[![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue)](https://pypi.org/project/chattice/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Status](https://img.shields.io/badge/status-pre--1.0-orange)](#status)
 [![Discussions](https://img.shields.io/badge/discussions-questions%20%26%20help-blue)](https://github.com/1whiteysage/chattice/discussions)
@@ -97,21 +97,25 @@ await dispatcher.run_pubsub(
 
 | Area | Support |
 | --- | --- |
-| Events | MESSAGE, CARD_CLICKED, APP_COMMAND (slash/quick/message actions), ADDED/REMOVED_FROM_SPACE, APP_HOME, SUBMIT_FORM, WIDGET_UPDATED |
+| Events | MESSAGE, CARD_CLICKED, APP_COMMAND (slash/quick/message actions), ADDED/REMOVED_FROM_SPACE, APP_HOME, SUBMIT_FORM, WIDGET_UPDATED, SYSTEM_COMMAND (preview) |
 | Routing | Routers, observer-wide filters, magic filters, middleware, DI |
 | Cards | Typed facades, public/non-sensitive PNG/JPEG publication through an optional AssetPublisher, sync updates |
-| Memberships | APP-auth add/get/list/remove for human users; caller-member Space listing |
+| Messages | Create/get/update/delete/list; Markdown, citations and footer sources; USER search and pins; APP card replacement |
+| Spaces | Get/list, USER search and group-chat lookup, create/update/delete with an explicit identity |
+| Memberships | APP-auth add/get/list/remove for human users; role updates; caller-member Space listing; Workspace administrator access (`admin_access=True`) |
+| Per-user state | USER read state, notification settings, availability, sidebar sections, custom emoji |
+| AI agents | Experimental: message streaming and 1:1 thread sessions (Google Developer Preview) |
 | Dialogs | OPEN_DIALOG, submit/cancel observers, action status; capability-gated per transport |
 | FSM | State/StatesGroup, Memory + Redis record storage (compare-and-set) |
-| Ingress | HTTP (verified), Pub/Sub push (verified), Pub/Sub streaming pull, Workspace Events CloudEvents |
+| Ingress | HTTP (verified) for both Chat API interaction events and Google Workspace add-on event objects, Pub/Sub push (verified), Pub/Sub streaming pull, Workspace Events CloudEvents |
 | Media | Local-file attachments sent with USER auth end to end (`media.upload` → `messages.create`, sender = HUMAN); download USER/APP; metadata APP; 200 MB local preflight |
 | Auth | App (service account), user (OAuth refresh), incoming verification |
 | Diagnostics | DEBUG routing diagnostics, structured Pub/Sub failure logs, typed Chat API errors |
-| Testing | MockBot, EventFactory, assertions, fake transport |
+| Testing | MockBot, `fake_bot()` (real Bot on a fake transport), EventFactory, assertions |
 
 ## Install
 
-Python 3.11+ (3.11–3.13 tested). MIT-licensed.
+Python 3.11+ (3.11–3.14 tested). MIT-licensed.
 
 ```bash
 pip install "chattice[fastapi,pubsub,redis]"  # HTTP, streaming pull, Redis
@@ -184,7 +188,7 @@ Runnable examples live in [`examples/`](https://github.com/1whiteysage/chattice/
 
 ## Status
 
-Pre-1.0 **public release** (current version 0.3.5) — see
+Pre-1.0 **public release** (current version 0.4.0) — see
 [CHANGELOG](CHANGELOG.md). The documented public
 surface is the compatibility baseline: patch releases preserve it; pre-1.0
 incompatible changes require a minor-version bump and upgrade notes. `chattice.experimental`

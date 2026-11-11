@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass
 from datetime import datetime
 from typing import TypedDict
 
@@ -24,28 +25,19 @@ from chattice.events import (
     MessageRef,
     RemovedFromSpaceEvent,
     SpaceRef,
+    SystemCommandEvent,
     ThreadRef,
     TimeZone,
     UnknownEvent,
     UserRef,
     WidgetUpdatedEvent,
+    WireFormat,
 )
 
 from .envelope import normalize_envelope
 from .exceptions import ConflictingEnvelopeError, InvalidInteractionPayload
 from .inputs import parse_form_inputs
 from .models import InteractionModel, SpaceModel, ThreadModel, UserModel
-
-_KNOWN_TYPES = {
-    "MESSAGE",
-    "ADDED_TO_SPACE",
-    "REMOVED_FROM_SPACE",
-    "CARD_CLICKED",
-    "WIDGET_UPDATED",
-    "APP_COMMAND",
-    "APP_HOME",
-    "SUBMIT_FORM",
-}
 
 
 class _EventKwargs(TypedDict):
@@ -57,6 +49,26 @@ class _EventKwargs(TypedDict):
     dialog: DialogMetadata | None
     locale: str | None
     timezone: TimeZone | None
+    wire_format: WireFormat
+
+
+@dataclass(frozen=True, slots=True)
+class _Interaction:
+    """One validated interaction plus the fields every event shares."""
+
+    model: InteractionModel
+    raw: dict[str, object]
+    base: _EventKwargs
+
+    @property
+    def is_addon(self) -> bool:
+        return self.base["wire_format"] is WireFormat.ADDON
+
+    def require_actor_space(self, *, space_required: bool = True) -> None:
+        missing_space = space_required and self.base["space"] is None
+        if self.base["actor"] is None or missing_space:
+            required = "user and space" if space_required else "user"
+            raise InvalidInteractionPayload(f"{self.model.type} requires {required}")
 
 
 def parse_interaction(payload: Mapping[str, object]) -> Event:
@@ -72,132 +84,168 @@ def parse_interaction(payload: Mapping[str, object]) -> Event:
     if model.type in {"UNSPECIFIED", "TYPE_UNSPECIFIED"}:
         raise InvalidInteractionPayload("UNSPECIFIED is not an interaction event")
 
-    event_time = _timestamp(model.event_time)
-    actor = _user(model.user or (model.message.sender if model.message else None))
-    space = _space(model.space or (model.message.space if model.message else None))
-    thread = _thread(
-        model.thread or (model.message.thread if model.message else None),
-        space=space,
-    )
-    dialog = _dialog(model.is_dialog_event, model.dialog_event_type)
+    message = model.message
+    space = _space(model.space or (message.space if message else None))
     common = model.common
-    locale = common.user_locale if common else None
-    timezone = (
-        TimeZone(id=common.time_zone.id, offset_ms=common.time_zone.offset)
-        if common and common.time_zone
-        else None
-    )
     base: _EventKwargs = {
         "raw": envelope.raw,
-        "event_time": event_time,
-        "actor": actor,
+        "event_time": _timestamp(model.event_time),
+        "actor": _user(model.user or (message.sender if message else None)),
         "space": space,
-        "thread": thread,
-        "dialog": dialog,
-        "locale": locale,
-        "timezone": timezone,
+        "thread": _thread(
+            model.thread or (message.thread if message else None), space=space
+        ),
+        "dialog": _dialog(model.is_dialog_event, model.dialog_event_type),
+        "locale": common.user_locale if common else None,
+        "timezone": (
+            TimeZone(id=common.time_zone.id, offset_ms=common.time_zone.offset)
+            if common and common.time_zone
+            else None
+        ),
+        "wire_format": envelope.wire_format,
     }
-
-    if model.type not in _KNOWN_TYPES:
+    build = _BUILDERS.get(model.type)
+    if build is None:
         return UnknownEvent(original_type=model.type, **base)
-    if model.type == "MESSAGE":
-        if model.message is None:
-            raise InvalidInteractionPayload("MESSAGE requires a message object")
-        # Slash commands arrive as MESSAGE events with message.slashCommand
-        # (documented command guide): route them to the SAME CommandEvent
-        # family as APP_COMMAND quick commands.
-        if model.message.slash_command is not None:
-            return _slash_command_event(model, base)
-        if model.message.text is None:
-            raise InvalidInteractionPayload("MESSAGE requires message.text")
-        return MessageEvent(
-            text=model.message.text,
-            message=MessageRef(name=model.message.name),
-            matched_url=(
-                model.message.matched_url.url if model.message.matched_url else None
-            ),
-            sender_type=model.message.sender.type if model.message.sender else None,
-            argument_text=_argument_text(model.message.argument_text),
-            **base,
-        )
-    if model.type == "ADDED_TO_SPACE":
-        _require_actor_space(model.type, actor, space)
-        return AddedToSpaceEvent(**base)
-    if model.type == "REMOVED_FROM_SPACE":
-        _require_actor_space(model.type, actor, space)
-        return RemovedFromSpaceEvent(**base)
-    if model.type == "APP_HOME":
-        _require_actor_space(model.type, actor, space)
-        return AppHomeEvent(**base)
+    return build(_Interaction(model=model, raw=envelope.raw, base=base))
 
+
+def _message_event(interaction: _Interaction) -> Event:
+    message = interaction.model.message
+    if message is None:
+        raise InvalidInteractionPayload("MESSAGE requires a message object")
+    # Slash commands arrive as MESSAGE events with message.slashCommand
+    # (documented command guide): route them to the SAME CommandEvent
+    # family as APP_COMMAND quick commands.
+    if message.slash_command is not None:
+        return _slash_command_event(interaction.model, interaction.base)
+    if message.text is None:
+        raise InvalidInteractionPayload("MESSAGE requires message.text")
+    return MessageEvent(
+        text=message.text,
+        message=MessageRef(name=message.name),
+        matched_url=message.matched_url.url if message.matched_url else None,
+        sender_type=message.sender.type if message.sender else None,
+        argument_text=_argument_text(message.argument_text),
+        **interaction.base,
+    )
+
+
+def _added_to_space_event(interaction: _Interaction) -> Event:
+    interaction.require_actor_space()
+    return AddedToSpaceEvent(**interaction.base)
+
+
+def _removed_from_space_event(interaction: _Interaction) -> Event:
+    interaction.require_actor_space()
+    return RemovedFromSpaceEvent(**interaction.base)
+
+
+def _system_command_event(interaction: _Interaction) -> Event:
+    # Developer Preview (message streaming). Metadata this version
+    # does not model stays reachable through ``raw``.
+    metadata = interaction.model.system_command_metadata
+    cancel = metadata.cancel_stream if metadata else None
+    return SystemCommandEvent(
+        cancel_stream=cancel.stream_message if cancel else None, **interaction.base
+    )
+
+
+def _app_home_event(interaction: _Interaction) -> Event:
+    # The add-on App Home trigger carries the user and no space.
+    interaction.require_actor_space(space_required=not interaction.is_addon)
+    return AppHomeEvent(**interaction.base)
+
+
+def _card_clicked_event(interaction: _Interaction) -> Event:
+    model = interaction.model
     parameters, form_inputs, function_name = _common_action(model)
-    if model.type == "CARD_CLICKED":
-        if not function_name:
-            raise InvalidInteractionPayload(
-                "CARD_CLICKED requires common.invokedFunction or "
-                "action.actionMethodName"
-            )
-        return ActionEvent(
-            name=function_name,
-            parameters=parameters,
-            form_inputs=form_inputs,
-            sender_type=(
-                model.message.sender.type
-                if model.message and model.message.sender
-                else None
-            ),
-            message=(
-                MessageRef(name=model.message.name)
-                if model.message and model.message.name
-                else None
-            ),
-            source=_action_source(envelope.raw, model, dialog),
-            **base,
+    # An HTTP add-on action is addressed by endpoint URL; a card that
+    # was not bound to a handler name still reaches handlers, which
+    # can route on its parameters.
+    if not function_name and not interaction.is_addon:
+        raise InvalidInteractionPayload(
+            "CARD_CLICKED requires common.invokedFunction or action.actionMethodName"
         )
-    if model.type == "WIDGET_UPDATED":
-        if not function_name:
-            raise InvalidInteractionPayload(
-                "WIDGET_UPDATED requires an associated invoked function"
-            )
-        return WidgetUpdatedEvent(
-            function_name=function_name,
-            parameters=parameters,
-            form_inputs=form_inputs,
-            **base,
+    message = model.message
+    return ActionEvent(
+        name=function_name,
+        parameters=parameters,
+        form_inputs=form_inputs,
+        sender_type=message.sender.type if message and message.sender else None,
+        message=MessageRef(name=message.name) if message and message.name else None,
+        source=_action_source(interaction.raw, model, interaction.base["dialog"]),
+        **interaction.base,
+    )
+
+
+def _widget_updated_event(interaction: _Interaction) -> Event:
+    parameters, form_inputs, function_name = _common_action(interaction.model)
+    if not function_name and not interaction.is_addon:
+        raise InvalidInteractionPayload(
+            "WIDGET_UPDATED requires an associated invoked function"
         )
-    if model.type == "APP_COMMAND":
-        metadata = model.app_command_metadata
-        if (
-            metadata is None
-            or metadata.app_command_id is None
-            or metadata.app_command_type is None
-        ):
-            raise InvalidInteractionPayload(
-                "APP_COMMAND requires appCommandMetadata ID and type"
-            )
-        kind = _app_command_kind(metadata.app_command_type)
-        return CommandEvent(
-            command_id=metadata.app_command_id,
-            command_type=metadata.app_command_type,
-            source_kind=metadata.app_command_type,
-            kind=kind,
-            message_text=model.message.text if model.message else None,
-            target_message=(
-                MessageRef(name=model.message.name)
-                if kind is CommandKind.MESSAGE_ACTION
-                and model.message is not None
-                and model.message.name is not None
-                else None
-            ),
-            **base,
+    return WidgetUpdatedEvent(
+        function_name=function_name,
+        parameters=parameters,
+        form_inputs=form_inputs,
+        **interaction.base,
+    )
+
+
+def _app_command_event(interaction: _Interaction) -> Event:
+    model = interaction.model
+    metadata = model.app_command_metadata
+    if (
+        metadata is None
+        or metadata.app_command_id is None
+        or metadata.app_command_type is None
+    ):
+        raise InvalidInteractionPayload(
+            "APP_COMMAND requires appCommandMetadata ID and type"
         )
-    _require_actor_space(model.type, actor, space)
+    kind = _app_command_kind(metadata.app_command_type, is_addon=interaction.is_addon)
+    message = model.message
+    return CommandEvent(
+        command_id=metadata.app_command_id,
+        command_type=metadata.app_command_type,
+        source_kind=metadata.app_command_type,
+        kind=kind,
+        message_text=_command_text(model, kind),
+        target_message=(
+            MessageRef(name=message.name)
+            if kind is CommandKind.MESSAGE_ACTION
+            and message is not None
+            and message.name is not None
+            else None
+        ),
+        **interaction.base,
+    )
+
+
+def _form_submit_event(interaction: _Interaction) -> Event:
+    parameters, form_inputs, function_name = _common_action(interaction.model)
+    interaction.require_actor_space(space_required=not interaction.is_addon)
     return FormSubmitEvent(
         function_name=function_name,
         parameters=parameters,
         form_inputs=form_inputs,
-        **base,
+        **interaction.base,
     )
+
+
+# Every other type is delivered as an UnknownEvent.
+_BUILDERS: dict[str, Callable[[_Interaction], Event]] = {
+    "MESSAGE": _message_event,
+    "ADDED_TO_SPACE": _added_to_space_event,
+    "REMOVED_FROM_SPACE": _removed_from_space_event,
+    "CARD_CLICKED": _card_clicked_event,
+    "WIDGET_UPDATED": _widget_updated_event,
+    "APP_COMMAND": _app_command_event,
+    "APP_HOME": _app_home_event,
+    "SUBMIT_FORM": _form_submit_event,
+    "SYSTEM_COMMAND": _system_command_event,
+}
 
 
 def _timestamp(value: str | None) -> datetime | None:
@@ -269,22 +317,43 @@ def _action_source(
     """Derive only source facts the official envelope makes unambiguous."""
     if dialog is not None:
         return ActionSource.DIALOG
-    if isinstance(raw.get("chat"), Mapping):
+    chat = raw.get("chat")
+    if isinstance(chat, Mapping) and "type" not in chat:
+        # Add-on event object: every interaction is under ``chat``, so
+        # the clicked message is what tells a message from the homepage.
+        return ActionSource.MESSAGE if model.message is not None else ActionSource.HOME
+    if isinstance(chat, Mapping):
         return ActionSource.HOME
     if model.message is not None:
         return ActionSource.MESSAGE
     return None
 
 
-def _app_command_kind(value: str) -> CommandKind | None:
-    # Slash commands have a different documented wire family
-    # (MESSAGE + message.slashCommand), so APP_COMMAND/SLASH_COMMAND is
-    # retained in raw/source_kind but not promoted into typed routing.
+def _app_command_kind(value: str, *, is_addon: bool = False) -> CommandKind | None:
+    # In Chat API interaction events slash commands have a different
+    # documented wire family (MESSAGE + message.slashCommand), so
+    # APP_COMMAND/SLASH_COMMAND is retained in raw/source_kind but not
+    # promoted into typed routing. Add-on event objects deliver slash
+    # commands as an app command, so there it is the typed route.
     if value == CommandKind.QUICK_COMMAND:
         return CommandKind.QUICK_COMMAND
     if value == CommandKind.MESSAGE_ACTION:
         return CommandKind.MESSAGE_ACTION
+    if is_addon and value == CommandKind.SLASH_COMMAND:
+        return CommandKind.SLASH_COMMAND
     return None
+
+
+def _command_text(model: InteractionModel, kind: CommandKind | None) -> str | None:
+    """Slash commands expose the mention-stripped argument text."""
+    message = model.message
+    if message is None:
+        return None
+    if kind is CommandKind.SLASH_COMMAND:
+        argument_text = _argument_text(message.argument_text)
+        if argument_text is not None:
+            return argument_text
+    return message.text
 
 
 def _common_action(
@@ -322,13 +391,6 @@ def _common_action(
         form_inputs,
         common_function or fallback_function or "",
     )
-
-
-def _require_actor_space(
-    event_type: str, actor: UserRef | None, space: SpaceRef | None
-) -> None:
-    if actor is None or space is None:
-        raise InvalidInteractionPayload(f"{event_type} requires user and space")
 
 
 def _argument_text(value: str | None) -> str | None:

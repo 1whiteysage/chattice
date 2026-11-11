@@ -416,8 +416,9 @@ Before any network call, Chattice validates the whole attachment set:
   attachment send is USER-authenticated, see the warning above)
 - `notify` + attachments → local error
   (`createMessageNotificationOptions` is APP-auth-specific)
-- `card` + attachments → local error (USER-auth card creation is a
-  Developer Preview; attachment sends are USER-authenticated)
+- `card` + attachments → sent with the USER identity (cards created with
+  user authentication are generally available; the Chat app must be a member
+  of the space)
 - `private_to` + attachments → local error (Google: private messages omit attachments)
 - `accessory_widgets` + attachments → local error (Google restriction)
 - missing path / directory / FIFO / device instead of a regular file

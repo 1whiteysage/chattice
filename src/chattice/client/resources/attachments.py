@@ -13,14 +13,13 @@ import asyncio
 from pathlib import Path
 from typing import Any, cast
 
-from google.apps.chat_v1.types.attachment import Attachment as AttachmentProto
+from google.apps.chat_v1 import ChatServiceAsyncClient
 
 from chattice.auth import AuthMode
 from chattice.capabilities.operations import Operation
 from chattice.client._names import _canonical_space
 from chattice.client.config import RequestConfig
 from chattice.client.errors import ChatAPIError
-from chattice.client.executor import OperationExecutor
 from chattice.client.resources.base import ResourceClient, _effective_config
 from chattice.events import SpaceRef
 from chattice.media import AttachmentRef, InputFile, UploadedAttachment
@@ -151,15 +150,7 @@ class Attachments(ResourceClient):
     ) -> AttachmentRef:
         """Fetch attachment metadata (APP auth + chat.bot only)."""
         effective = _effective_config(config, timeout)
-        proto = cast(
-            AttachmentProto,
-            await self._executor.execute(
-                Operation.ATTACHMENT_METADATA_GET,
-                identity=self._identity,
-                call=lambda client, cfg: client.get_attachment(
-                    name=name, **OperationExecutor.gapic_kwargs(cfg)
-                ),
-                config=effective,
-            ),
+        proto = await self._rpc(Operation.ATTACHMENT_METADATA_GET, effective)(
+            ChatServiceAsyncClient.get_attachment, name=name
         )
         return AttachmentRef.from_proto(proto)

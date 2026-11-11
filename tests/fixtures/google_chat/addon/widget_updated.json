@@ -1,0 +1,30 @@
+{
+  "commonEventObject": {
+    "hostApp": "CHAT",
+    "platform": "WEB",
+    "userLocale": "en",
+    "timeZone": {
+      "id": "Europe/Kyiv",
+      "offset": 7200000
+    },
+    "parameters": {
+      "chattice_function": "contacts.search",
+      "autocomplete_widget_query": "ad"
+    }
+  },
+  "chat": {
+    "user": {
+      "name": "users/123",
+      "displayName": "Example User",
+      "type": "HUMAN"
+    },
+    "eventTime": "2000-01-01T12:34:56Z",
+    "widgetUpdatedPayload": {
+      "space": {
+        "name": "spaces/AAA",
+        "spaceType": "SPACE",
+        "displayName": "Example space"
+      }
+    }
+  }
+}

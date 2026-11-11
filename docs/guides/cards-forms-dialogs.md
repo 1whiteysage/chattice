@@ -215,3 +215,25 @@ Button("Deploy", action=Deploy(environment="prod", version="1.2.3"))
 If the incoming parameters cannot decode into the model, the filter does
 not match — enable the `chattice.actions` logger at DEBUG level to see
 the reason (see [Troubleshooting](../troubleshooting.md)).
+
+## Cards on user messages and asynchronous updates
+
+A card can be sent with either identity. With the USER identity the person is
+the sender and Google attributes the card to the app:
+
+```python
+sent = await bot.user.messages.create("spaces/AAA", text="Status", card=card)
+await bot.app.messages.replace_cards(sent.name, [updated_card])
+```
+
+`replace_cards` needs no user interaction and always runs as the app. It can
+replace cards this app attached, add further cards while replacing, and remove
+them with an empty list. Google's limits apply:
+
+- the Chat app must be a member of the space, also for the USER-identity send;
+- only cards this app attached can be replaced, and a message without cards
+  cannot gain one;
+- after an empty list removes the cards, they cannot be added back;
+- when the person edits the message text, the app-owned cards are removed.
+
+Google mapping: `spaces.messages.create` and `spaces.messages.replaceCards`.

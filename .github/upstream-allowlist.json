@@ -1,0 +1,6 @@
+{
+  "spaces.completeImport": "Import mode stays on bot.raw.",
+  "spaces.messages.patch": "The facade uses spaces.messages.update.",
+  "spaces.spaceEvents.get": "Space events stay on bot.raw.",
+  "spaces.spaceEvents.list": "Space events stay on bot.raw."
+}

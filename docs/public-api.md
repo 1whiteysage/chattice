@@ -1,6 +1,6 @@
 # Public API Reference
 
-Public API snapshot for Chattice 0.3.5.
+Public API snapshot for Chattice 0.4.0.
 
 ## Convention
 
@@ -58,6 +58,7 @@ these promises:
 | `ActionSource`        | Proven message/dialog/App Home action surface      | 0.1.2    |
 | `AddedToSpaceEvent`   | Bot added to space                                 | 0.1.2    |
 | `RemovedFromSpaceEvent`| Bot removed from space                             | 0.1.2    |
+| `SystemCommandEvent`  | Google system command; `cancel_stream` for a stopped stream (Developer Preview routing) | 0.4.0    |
 | `UnknownEvent`        | Forward-compatible unknown envelope fallback       | 0.1.2    |
 | `ErrorEvent`          | Error-observer payload                             | 0.1.2    |
 | `MessageRef`          | Typed message reference                            | 0.1.2    |
@@ -216,6 +217,30 @@ these promises:
 | `chattice.client.resources.Users` (`bot.user.users`)      | Per-user state namespace: `read_state`, `thread_read_state`, `notification_setting` | 0.2.0    |
 | `chattice.client.resources.Reactions` (`bot.user.reactions`) | USER-only reactions: create / list (Pager) / delete | 0.2.0    |
 | `chattice.capabilities.scopes(...)`                  | Fully-qualified OAuth scope helper                | 0.2.0    |
+| `bot.user.message_pins` (`chattice.client.resources.MessagePins`) | USER-only message pins: create / list (Pager) / delete | 0.4.0    |
+| `bot.app.messages.replace_cards()` | Replace app-owned cards without a user interaction (APP-only) | 0.4.0    |
+| `messages.create(..., citations=, cited_sources=)` | Inline citations and footer sources (Markdown markup) | 0.4.0    |
+| `messages.update(..., markup_syntax=)` | Markup syntax for the updated text | 0.4.0    |
+| `bot.user.messages.search()` | Search messages across the user's spaces (Pager, USER-only) | 0.4.0    |
+| `bot.user.spaces.search()` / `.find_group_chats()` | Search joined spaces; find group chats by members (Pager, USER-only) | 0.4.0    |
+| `spaces.create()` / `.update()` / `.delete()` | Space management with an explicit identity | 0.4.0    |
+| `memberships.update(name, role=)` | Change a membership role | 0.4.0    |
+| `bot.user.users.availability` (`chattice.client.resources.Availability`) | Own presence state and custom status (USER-only) | 0.4.0    |
+| `bot.user.users.sections` (`chattice.client.resources.Sections`) | Sidebar sections and their items (USER-only) | 0.4.0    |
+| `bot.user.custom_emojis` (`chattice.client.resources.CustomEmojis`) | Organization custom emojis: create / get / list (Pager) / delete (USER-only) | 0.4.0    |
+| `router.system_command` | Observer for `SystemCommandEvent` (needs `PreviewFeature.MESSAGE_STREAMING`) | 0.4.0    |
+| `EventFactory.system_command()` | Test builder for `SystemCommandEvent` | 0.4.0    |
+| `chattice.experimental.streaming` | Stream messages over `spaces.streamMessages` (experimental, Developer Preview) | 0.4.0    |
+| `chattice.experimental.sessions` | Thread sessions in 1:1 app DMs (experimental, Developer Preview) | 0.4.0    |
+| `chattice.events.WireFormat` / `Event.wire_format` | Payload family an interaction arrived in: `CHAT_API` or `ADDON` | 0.4.0    |
+| `chattice.transports.http.AddOnTokenVerifier` | Request verifier for Chat apps built as Workspace add-ons | 0.4.0    |
+| `chattice.transports.http.serialize_response()` | Handler result to wire JSON in the event's payload family | 0.4.0    |
+| `create_chat_router(..., addon_action_url=)` / `Bot(..., addon_action_url=)` | Bind card actions to an HTTP add-on endpoint | 0.4.0    |
+| `chattice.cards.addon.bind_addon_actions()` / `ADDON_FUNCTION_PARAMETER` | Explicit add-on action binding and its reserved parameter | 0.4.0    |
+| `RequestConfigResponse(..., resource=)` | Service display name for the add-on authorization prompt | 0.4.0    |
+| `spaces.get/search/update/delete(..., admin_access=)`, `memberships.*(..., admin_access=)` | Workspace administrator access on the USER identity (`ADMIN` variant) | 0.4.0    |
+| `Bot(..., preview_features=)` / `bot.preview_capabilities` | Per-feature Developer Preview enrollment shared with `Dispatcher(bot=bot)` | 0.4.0    |
+| `chattice.capabilities.DEVELOPER_PREVIEW_FEATURES` / `PreviewCapabilities.all()` | The features in Developer Preview today | 0.4.0    |
 | `chattice.exceptions.UnhandledInteractionError`    | Strict-interactions routing error                  | 0.2.0    |
 | `bot.warmup()`                | Resolve credentials / build clients before first event   | 0.2.0    |
 | `chattice.client.paging.Pager`                       | Explicit async paging (`collect(limit=...)`)            | 0.2.0    |
@@ -323,6 +348,7 @@ capabilities are covered by `Operation` and the registry
 | `MockBot`             | DI-compatible Bot recorder (no network)        | 0.1.2    |
 | `EventFactory`        | Typed event builders (no raw Google JSON)      | 0.1.2    |
 | `FakeChatTransport`   | Fake transport for Google Chat client tests       | 0.1.2    |
+| `fake_bot`            | Real `Bot` on a `FakeChatTransport` in one call; returns `(bot, transport)` | 0.4.0    |
 | `assert_card_has_button` | Card assertion helper                       | 0.1.2    |
 | `assert_card_header`  | Card header assertion helper                   | 0.1.2    |
 | `set_state_for`       | FSM state seeding helper                       | 0.1.2    |

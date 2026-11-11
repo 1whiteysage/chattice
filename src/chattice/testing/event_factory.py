@@ -15,6 +15,7 @@ from chattice.events import (
     MessageEvent,
     RemovedFromSpaceEvent,
     SpaceRef,
+    SystemCommandEvent,
     ThreadRef,
     UnknownEvent,
     UserRef,
@@ -124,6 +125,22 @@ class EventFactory:
             actor=_user(user),
             space=_space(space),
             thread=thread,
+        )
+
+    @staticmethod
+    def system_command(
+        *,
+        cancel_stream: str | None = None,
+        user: UserRef | str | None = None,
+        space: SpaceRef | str | None = None,
+        event_time: datetime | None = None,
+    ) -> SystemCommandEvent:
+        """Build a system command event (stream cancellation)."""
+        return SystemCommandEvent(
+            cancel_stream=cancel_stream,
+            event_time=event_time,
+            actor=_user(user),
+            space=_space(space),
         )
 
     @staticmethod

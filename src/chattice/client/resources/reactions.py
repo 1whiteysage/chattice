@@ -3,8 +3,7 @@
 
 from __future__ import annotations
 
-from typing import cast
-
+from google.apps.chat_v1 import ChatServiceAsyncClient
 from google.apps.chat_v1.types.reaction import (
     Emoji,
     ListReactionsRequest,
@@ -13,7 +12,6 @@ from google.apps.chat_v1.types.reaction import (
 
 from chattice.capabilities.operations import Operation
 from chattice.client.config import RequestConfig
-from chattice.client.executor import OperationExecutor
 from chattice.client.paging import Pager
 from chattice.client.resources.base import ResourceClient, _effective_config
 
@@ -38,17 +36,9 @@ class Reactions(ResourceClient):
         """React to ``message`` (canonical name) with a unicode ``emoji``."""
         effective = _effective_config(config, timeout)
         reaction = Reaction(emoji=Emoji(unicode=emoji))
-        return cast(
-            Reaction,
-            await self._executor.execute(
-                Operation.REACTIONS_CREATE,
-                identity=self._identity,
-                call=lambda client, cfg: client.create_reaction(
-                    request={"parent": message, "reaction": reaction},
-                    **OperationExecutor.gapic_kwargs(cfg),
-                ),
-                config=effective,
-            ),
+        return await self._rpc(Operation.REACTIONS_CREATE, effective)(
+            ChatServiceAsyncClient.create_reaction,
+            request={"parent": message, "reaction": reaction},
         )
 
     async def list(
@@ -66,13 +56,8 @@ class Reactions(ResourceClient):
             request.page_size = page_size
 
         async def fetch() -> object:
-            return await self._executor.execute(
-                Operation.REACTIONS_LIST,
-                identity=self._identity,
-                call=lambda client, cfg: client.list_reactions(
-                    request=request, **OperationExecutor.gapic_kwargs(cfg)
-                ),
-                config=effective,
+            return await self._rpc(Operation.REACTIONS_LIST, effective)(
+                ChatServiceAsyncClient.list_reactions, request=request
             )
 
         return Pager(fetch=fetch)
@@ -86,11 +71,6 @@ class Reactions(ResourceClient):
     ) -> None:
         """Delete one reaction by canonical name."""
         effective = _effective_config(config, timeout)
-        await self._executor.execute(
-            Operation.REACTIONS_DELETE,
-            identity=self._identity,
-            call=lambda client, cfg: client.delete_reaction(
-                name=name, **OperationExecutor.gapic_kwargs(cfg)
-            ),
-            config=effective,
+        await self._rpc(Operation.REACTIONS_DELETE, effective)(
+            ChatServiceAsyncClient.delete_reaction, name=name
         )

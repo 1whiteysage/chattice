@@ -1,0 +1,40 @@
+{
+  "commonEventObject": {
+    "hostApp": "CHAT",
+    "platform": "WEB",
+    "userLocale": "en",
+    "timeZone": {
+      "id": "Europe/Kyiv",
+      "offset": 7200000
+    }
+  },
+  "chat": {
+    "user": {
+      "name": "users/123",
+      "displayName": "Example User",
+      "type": "HUMAN"
+    },
+    "eventTime": "2000-01-01T12:34:56Z",
+    "messagePayload": {
+      "space": {
+        "name": "spaces/AAA",
+        "spaceType": "SPACE",
+        "displayName": "Example space"
+      },
+      "message": {
+        "name": "spaces/AAA/messages/MSG",
+        "text": "https://support.example.com/cases/1",
+        "sender": {
+          "name": "users/123",
+          "type": "HUMAN"
+        },
+        "thread": {
+          "name": "spaces/AAA/threads/THR"
+        },
+        "matchedUrl": {
+          "url": "https://support.example.com/cases/1"
+        }
+      }
+    }
+  }
+}

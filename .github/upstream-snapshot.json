@@ -1,0 +1,1769 @@
+{
+  "discovery": {
+    "deprecated": [
+      "GoogleAppsCardV1Chip.enabled",
+      "GoogleAppsCardV1DecoratedText.icon",
+      "Message.cards",
+      "SearchSpacesResponse.spaces",
+      "Space.threaded",
+      "Space.type",
+      "spaces.messages.create(threadKey)"
+    ],
+    "methods": {
+      "customEmojis.create": [
+        "https://www.googleapis.com/auth/chat.customemojis"
+      ],
+      "customEmojis.delete": [
+        "https://www.googleapis.com/auth/chat.customemojis"
+      ],
+      "customEmojis.get": [
+        "https://www.googleapis.com/auth/chat.customemojis",
+        "https://www.googleapis.com/auth/chat.customemojis.readonly"
+      ],
+      "customEmojis.list": [
+        "https://www.googleapis.com/auth/chat.customemojis",
+        "https://www.googleapis.com/auth/chat.customemojis.readonly"
+      ],
+      "media.download": [
+        "https://www.googleapis.com/auth/chat.bot",
+        "https://www.googleapis.com/auth/chat.messages",
+        "https://www.googleapis.com/auth/chat.messages.readonly"
+      ],
+      "media.upload": [
+        "https://www.googleapis.com/auth/chat.bot",
+        "https://www.googleapis.com/auth/chat.import",
+        "https://www.googleapis.com/auth/chat.messages",
+        "https://www.googleapis.com/auth/chat.messages.create"
+      ],
+      "spaces.completeImport": [
+        "https://www.googleapis.com/auth/chat.import"
+      ],
+      "spaces.create": [
+        "https://www.googleapis.com/auth/chat.app.spaces",
+        "https://www.googleapis.com/auth/chat.app.spaces.create",
+        "https://www.googleapis.com/auth/chat.import",
+        "https://www.googleapis.com/auth/chat.spaces",
+        "https://www.googleapis.com/auth/chat.spaces.create"
+      ],
+      "spaces.delete": [
+        "https://www.googleapis.com/auth/chat.admin.delete",
+        "https://www.googleapis.com/auth/chat.app.delete",
+        "https://www.googleapis.com/auth/chat.delete",
+        "https://www.googleapis.com/auth/chat.import"
+      ],
+      "spaces.findDirectMessage": [
+        "https://www.googleapis.com/auth/chat.bot",
+        "https://www.googleapis.com/auth/chat.spaces",
+        "https://www.googleapis.com/auth/chat.spaces.readonly"
+      ],
+      "spaces.findGroupChats": [
+        "https://www.googleapis.com/auth/chat.memberships",
+        "https://www.googleapis.com/auth/chat.memberships.readonly"
+      ],
+      "spaces.get": [
+        "https://www.googleapis.com/auth/chat.admin.spaces",
+        "https://www.googleapis.com/auth/chat.admin.spaces.readonly",
+        "https://www.googleapis.com/auth/chat.app.spaces",
+        "https://www.googleapis.com/auth/chat.bot",
+        "https://www.googleapis.com/auth/chat.spaces",
+        "https://www.googleapis.com/auth/chat.spaces.readonly"
+      ],
+      "spaces.list": [
+        "https://www.googleapis.com/auth/chat.bot",
+        "https://www.googleapis.com/auth/chat.spaces",
+        "https://www.googleapis.com/auth/chat.spaces.readonly"
+      ],
+      "spaces.members.create": [
+        "https://www.googleapis.com/auth/chat.admin.memberships",
+        "https://www.googleapis.com/auth/chat.app.memberships",
+        "https://www.googleapis.com/auth/chat.import",
+        "https://www.googleapis.com/auth/chat.memberships",
+        "https://www.googleapis.com/auth/chat.memberships.app"
+      ],
+      "spaces.members.delete": [
+        "https://www.googleapis.com/auth/chat.admin.memberships",
+        "https://www.googleapis.com/auth/chat.app.memberships",
+        "https://www.googleapis.com/auth/chat.import",
+        "https://www.googleapis.com/auth/chat.memberships",
+        "https://www.googleapis.com/auth/chat.memberships.app"
+      ],
+      "spaces.members.get": [
+        "https://www.googleapis.com/auth/chat.admin.memberships",
+        "https://www.googleapis.com/auth/chat.admin.memberships.readonly",
+        "https://www.googleapis.com/auth/chat.app.memberships",
+        "https://www.googleapis.com/auth/chat.bot",
+        "https://www.googleapis.com/auth/chat.memberships",
+        "https://www.googleapis.com/auth/chat.memberships.readonly"
+      ],
+      "spaces.members.list": [
+        "https://www.googleapis.com/auth/chat.admin.memberships",
+        "https://www.googleapis.com/auth/chat.admin.memberships.readonly",
+        "https://www.googleapis.com/auth/chat.app.memberships",
+        "https://www.googleapis.com/auth/chat.bot",
+        "https://www.googleapis.com/auth/chat.import",
+        "https://www.googleapis.com/auth/chat.memberships",
+        "https://www.googleapis.com/auth/chat.memberships.readonly"
+      ],
+      "spaces.members.patch": [
+        "https://www.googleapis.com/auth/chat.admin.memberships",
+        "https://www.googleapis.com/auth/chat.app.memberships",
+        "https://www.googleapis.com/auth/chat.import",
+        "https://www.googleapis.com/auth/chat.memberships"
+      ],
+      "spaces.messagePins.create": [
+        "https://www.googleapis.com/auth/chat.spaces",
+        "https://www.googleapis.com/auth/chat.spaces.pins"
+      ],
+      "spaces.messagePins.delete": [
+        "https://www.googleapis.com/auth/chat.spaces",
+        "https://www.googleapis.com/auth/chat.spaces.pins"
+      ],
+      "spaces.messagePins.list": [
+        "https://www.googleapis.com/auth/chat.spaces",
+        "https://www.googleapis.com/auth/chat.spaces.pins",
+        "https://www.googleapis.com/auth/chat.spaces.pins.readonly",
+        "https://www.googleapis.com/auth/chat.spaces.readonly"
+      ],
+      "spaces.messages.attachments.get": [
+        "https://www.googleapis.com/auth/chat.bot"
+      ],
+      "spaces.messages.create": [
+        "https://www.googleapis.com/auth/chat.bot",
+        "https://www.googleapis.com/auth/chat.import",
+        "https://www.googleapis.com/auth/chat.messages",
+        "https://www.googleapis.com/auth/chat.messages.create"
+      ],
+      "spaces.messages.delete": [
+        "https://www.googleapis.com/auth/chat.bot",
+        "https://www.googleapis.com/auth/chat.import",
+        "https://www.googleapis.com/auth/chat.messages"
+      ],
+      "spaces.messages.get": [
+        "https://www.googleapis.com/auth/chat.app.messages.readonly",
+        "https://www.googleapis.com/auth/chat.bot",
+        "https://www.googleapis.com/auth/chat.messages",
+        "https://www.googleapis.com/auth/chat.messages.readonly"
+      ],
+      "spaces.messages.list": [
+        "https://www.googleapis.com/auth/chat.app.messages.readonly",
+        "https://www.googleapis.com/auth/chat.import",
+        "https://www.googleapis.com/auth/chat.messages",
+        "https://www.googleapis.com/auth/chat.messages.readonly"
+      ],
+      "spaces.messages.patch": [
+        "https://www.googleapis.com/auth/chat.bot",
+        "https://www.googleapis.com/auth/chat.import",
+        "https://www.googleapis.com/auth/chat.messages"
+      ],
+      "spaces.messages.reactions.create": [
+        "https://www.googleapis.com/auth/chat.bot",
+        "https://www.googleapis.com/auth/chat.import",
+        "https://www.googleapis.com/auth/chat.messages",
+        "https://www.googleapis.com/auth/chat.messages.reactions",
+        "https://www.googleapis.com/auth/chat.messages.reactions.create"
+      ],
+      "spaces.messages.reactions.delete": [
+        "https://www.googleapis.com/auth/chat.bot",
+        "https://www.googleapis.com/auth/chat.import",
+        "https://www.googleapis.com/auth/chat.messages",
+        "https://www.googleapis.com/auth/chat.messages.reactions"
+      ],
+      "spaces.messages.reactions.list": [
+        "https://www.googleapis.com/auth/chat.app.messages.readonly",
+        "https://www.googleapis.com/auth/chat.bot",
+        "https://www.googleapis.com/auth/chat.messages",
+        "https://www.googleapis.com/auth/chat.messages.reactions",
+        "https://www.googleapis.com/auth/chat.messages.reactions.readonly",
+        "https://www.googleapis.com/auth/chat.messages.readonly"
+      ],
+      "spaces.messages.replaceCards": [
+        "https://www.googleapis.com/auth/chat.bot"
+      ],
+      "spaces.messages.search": [
+        "https://www.googleapis.com/auth/chat.messages",
+        "https://www.googleapis.com/auth/chat.messages.readonly"
+      ],
+      "spaces.messages.update": [
+        "https://www.googleapis.com/auth/chat.bot",
+        "https://www.googleapis.com/auth/chat.import",
+        "https://www.googleapis.com/auth/chat.messages"
+      ],
+      "spaces.patch": [
+        "https://www.googleapis.com/auth/chat.admin.spaces",
+        "https://www.googleapis.com/auth/chat.app.spaces",
+        "https://www.googleapis.com/auth/chat.import",
+        "https://www.googleapis.com/auth/chat.spaces"
+      ],
+      "spaces.search": [
+        "https://www.googleapis.com/auth/chat.admin.spaces",
+        "https://www.googleapis.com/auth/chat.admin.spaces.readonly",
+        "https://www.googleapis.com/auth/chat.spaces",
+        "https://www.googleapis.com/auth/chat.spaces.readonly"
+      ],
+      "spaces.setup": [
+        "https://www.googleapis.com/auth/chat.spaces",
+        "https://www.googleapis.com/auth/chat.spaces.create"
+      ],
+      "spaces.spaceEvents.get": [
+        "https://www.googleapis.com/auth/chat.app.all.memberships.readonly",
+        "https://www.googleapis.com/auth/chat.app.all.messages.readonly",
+        "https://www.googleapis.com/auth/chat.app.all.spaces.readonly",
+        "https://www.googleapis.com/auth/chat.app.memberships",
+        "https://www.googleapis.com/auth/chat.app.memberships.readonly",
+        "https://www.googleapis.com/auth/chat.app.messages.readonly",
+        "https://www.googleapis.com/auth/chat.app.spaces",
+        "https://www.googleapis.com/auth/chat.app.spaces.readonly",
+        "https://www.googleapis.com/auth/chat.memberships",
+        "https://www.googleapis.com/auth/chat.memberships.readonly",
+        "https://www.googleapis.com/auth/chat.messages",
+        "https://www.googleapis.com/auth/chat.messages.reactions",
+        "https://www.googleapis.com/auth/chat.messages.reactions.readonly",
+        "https://www.googleapis.com/auth/chat.messages.readonly",
+        "https://www.googleapis.com/auth/chat.spaces",
+        "https://www.googleapis.com/auth/chat.spaces.readonly"
+      ],
+      "spaces.spaceEvents.list": [
+        "https://www.googleapis.com/auth/chat.app.all.memberships.readonly",
+        "https://www.googleapis.com/auth/chat.app.all.messages.readonly",
+        "https://www.googleapis.com/auth/chat.app.all.spaces.readonly",
+        "https://www.googleapis.com/auth/chat.app.memberships",
+        "https://www.googleapis.com/auth/chat.app.memberships.readonly",
+        "https://www.googleapis.com/auth/chat.app.messages.readonly",
+        "https://www.googleapis.com/auth/chat.app.spaces",
+        "https://www.googleapis.com/auth/chat.app.spaces.readonly",
+        "https://www.googleapis.com/auth/chat.memberships",
+        "https://www.googleapis.com/auth/chat.memberships.readonly",
+        "https://www.googleapis.com/auth/chat.messages",
+        "https://www.googleapis.com/auth/chat.messages.reactions",
+        "https://www.googleapis.com/auth/chat.messages.reactions.readonly",
+        "https://www.googleapis.com/auth/chat.messages.readonly",
+        "https://www.googleapis.com/auth/chat.spaces",
+        "https://www.googleapis.com/auth/chat.spaces.readonly"
+      ],
+      "users.availability.get": [
+        "https://www.googleapis.com/auth/chat.users.availability",
+        "https://www.googleapis.com/auth/chat.users.availability.readonly"
+      ],
+      "users.availability.markAsActive": [
+        "https://www.googleapis.com/auth/chat.users.availability"
+      ],
+      "users.availability.markAsAway": [
+        "https://www.googleapis.com/auth/chat.users.availability"
+      ],
+      "users.availability.markAsDoNotDisturb": [
+        "https://www.googleapis.com/auth/chat.users.availability"
+      ],
+      "users.availability.patch": [
+        "https://www.googleapis.com/auth/chat.users.availability"
+      ],
+      "users.sections.create": [
+        "https://www.googleapis.com/auth/chat.users.sections"
+      ],
+      "users.sections.delete": [
+        "https://www.googleapis.com/auth/chat.users.sections"
+      ],
+      "users.sections.items.list": [
+        "https://www.googleapis.com/auth/chat.users.sections",
+        "https://www.googleapis.com/auth/chat.users.sections.readonly"
+      ],
+      "users.sections.items.move": [
+        "https://www.googleapis.com/auth/chat.users.sections"
+      ],
+      "users.sections.list": [
+        "https://www.googleapis.com/auth/chat.users.sections",
+        "https://www.googleapis.com/auth/chat.users.sections.readonly"
+      ],
+      "users.sections.patch": [
+        "https://www.googleapis.com/auth/chat.users.sections"
+      ],
+      "users.sections.position": [
+        "https://www.googleapis.com/auth/chat.users.sections"
+      ],
+      "users.spaces.getSpaceReadState": [
+        "https://www.googleapis.com/auth/chat.users.readstate",
+        "https://www.googleapis.com/auth/chat.users.readstate.readonly"
+      ],
+      "users.spaces.spaceNotificationSetting.get": [
+        "https://www.googleapis.com/auth/chat.users.spacesettings"
+      ],
+      "users.spaces.spaceNotificationSetting.patch": [
+        "https://www.googleapis.com/auth/chat.users.spacesettings"
+      ],
+      "users.spaces.threads.getThreadReadState": [
+        "https://www.googleapis.com/auth/chat.users.readstate",
+        "https://www.googleapis.com/auth/chat.users.readstate.readonly"
+      ],
+      "users.spaces.updateSpaceReadState": [
+        "https://www.googleapis.com/auth/chat.users.readstate"
+      ]
+    },
+    "revision": "20261107",
+    "schemas": {
+      "AccessPermissionSetting": {
+        "principals": []
+      },
+      "AccessPermissionSettings": {
+        "discoverSpaceSetting": [],
+        "joinSpaceSetting": [],
+        "viewSpaceMembershipSetting": []
+      },
+      "AccessSettings": {
+        "accessPermissionSettings": [],
+        "accessState": [
+          "ACCESS_STATE_UNSPECIFIED",
+          "DISCOVERABLE",
+          "PRIVATE"
+        ],
+        "audience": []
+      },
+      "AccessoryWidget": {
+        "buttonList": []
+      },
+      "ActionParameter": {
+        "key": [],
+        "value": []
+      },
+      "ActionResponse": {
+        "dialogAction": [],
+        "type": [
+          "DIALOG",
+          "NEW_MESSAGE",
+          "REQUEST_CONFIG",
+          "TYPE_UNSPECIFIED",
+          "UPDATE_MESSAGE",
+          "UPDATE_USER_MESSAGE_CARDS",
+          "UPDATE_WIDGET"
+        ],
+        "updatedWidget": [],
+        "url": []
+      },
+      "ActionStatus": {
+        "statusCode": [
+          "ABORTED",
+          "ALREADY_EXISTS",
+          "CANCELLED",
+          "DATA_LOSS",
+          "DEADLINE_EXCEEDED",
+          "FAILED_PRECONDITION",
+          "INTERNAL",
+          "INVALID_ARGUMENT",
+          "NOT_FOUND",
+          "OK",
+          "OUT_OF_RANGE",
+          "PERMISSION_DENIED",
+          "RESOURCE_EXHAUSTED",
+          "UNAUTHENTICATED",
+          "UNAVAILABLE",
+          "UNIMPLEMENTED",
+          "UNKNOWN"
+        ],
+        "userFacingMessage": []
+      },
+      "Annotation": {
+        "customEmojiMetadata": [],
+        "length": [],
+        "richLinkMetadata": [],
+        "slashCommand": [],
+        "startIndex": [],
+        "type": [
+          "ANNOTATION_TYPE_UNSPECIFIED",
+          "CUSTOM_EMOJI",
+          "RICH_LINK",
+          "SLASH_COMMAND",
+          "USER_MENTION"
+        ],
+        "userMention": []
+      },
+      "AppCommandMetadata": {
+        "appCommandId": [],
+        "appCommandType": [
+          "APP_COMMAND_TYPE_UNSPECIFIED",
+          "MESSAGE_ACTION",
+          "QUICK_COMMAND",
+          "SLASH_COMMAND"
+        ]
+      },
+      "AttachedGif": {
+        "uri": []
+      },
+      "Attachment": {
+        "attachmentDataRef": [],
+        "contentName": [],
+        "contentType": [],
+        "downloadUri": [],
+        "driveDataRef": [],
+        "name": [],
+        "source": [
+          "DRIVE_FILE",
+          "SOURCE_UNSPECIFIED",
+          "UPLOADED_CONTENT"
+        ],
+        "thumbnailUri": []
+      },
+      "AttachmentDataRef": {
+        "attachmentUploadToken": [],
+        "resourceName": []
+      },
+      "Audience": {
+        "name": []
+      },
+      "Availability": {
+        "customStatus": [],
+        "doNotDisturbMetadata": [],
+        "name": [],
+        "state": [
+          "ACTIVE",
+          "AWAY",
+          "DO_NOT_DISTURB",
+          "IDLE",
+          "STATE_UNSPECIFIED"
+        ]
+      },
+      "Button": {
+        "imageButton": [],
+        "textButton": []
+      },
+      "CalendarEventLinkData": {
+        "calendarId": [],
+        "eventId": []
+      },
+      "Card": {
+        "cardActions": [],
+        "header": [],
+        "name": [],
+        "sections": []
+      },
+      "CardAction": {
+        "actionLabel": [],
+        "onClick": []
+      },
+      "CardHeader": {
+        "imageStyle": [
+          "AVATAR",
+          "IMAGE",
+          "IMAGE_STYLE_UNSPECIFIED"
+        ],
+        "imageUrl": [],
+        "subtitle": [],
+        "title": []
+      },
+      "CardWithId": {
+        "card": [],
+        "cardId": [],
+        "ownerUser": []
+      },
+      "ChatAppLogEntry": {
+        "deployment": [],
+        "deploymentFunction": [],
+        "error": []
+      },
+      "ChatClientDataSourceMarkup": {
+        "spaceDataSource": []
+      },
+      "ChatSpaceLinkData": {
+        "message": [],
+        "space": [],
+        "thread": []
+      },
+      "Citation": {
+        "citedSources": [],
+        "id": []
+      },
+      "CitedSource": {
+        "footer": [],
+        "snippet": [],
+        "title": [],
+        "uri": []
+      },
+      "Color": {
+        "alpha": [],
+        "blue": [],
+        "green": [],
+        "red": []
+      },
+      "CommonEventObject": {
+        "formInputs": [],
+        "hostApp": [
+          "CALENDAR",
+          "CHAT",
+          "DEMO",
+          "DOCS",
+          "DRAWINGS",
+          "DRIVE",
+          "GMAIL",
+          "MEET",
+          "SHEETS",
+          "SLIDES",
+          "UNSPECIFIED_HOST_APP"
+        ],
+        "invokedFunction": [],
+        "parameters": [],
+        "platform": [
+          "ANDROID",
+          "IOS",
+          "UNKNOWN_PLATFORM",
+          "WEB"
+        ],
+        "timeZone": [],
+        "userLocale": []
+      },
+      "CompleteImportSpaceRequest": {},
+      "CompleteImportSpaceResponse": {
+        "space": []
+      },
+      "CustomEmoji": {
+        "emojiName": [],
+        "name": [],
+        "payload": [],
+        "temporaryImageUri": [],
+        "uid": []
+      },
+      "CustomEmojiMetadata": {
+        "customEmoji": []
+      },
+      "CustomEmojiPayload": {
+        "fileContent": [],
+        "filename": []
+      },
+      "CustomStatus": {
+        "emoji": [],
+        "expireTime": [],
+        "text": [],
+        "ttl": []
+      },
+      "DateInput": {
+        "msSinceEpoch": []
+      },
+      "DateTimeInput": {
+        "hasDate": [],
+        "hasTime": [],
+        "msSinceEpoch": []
+      },
+      "DeletionMetadata": {
+        "deletionType": [
+          "ADMIN",
+          "APP_MESSAGE_EXPIRY",
+          "CREATOR",
+          "CREATOR_VIA_APP",
+          "DELETION_TYPE_UNSPECIFIED",
+          "SPACE_MEMBER",
+          "SPACE_OWNER",
+          "SPACE_OWNER_VIA_APP"
+        ]
+      },
+      "DeprecatedEvent": {
+        "action": [],
+        "appCommandMetadata": [],
+        "common": [],
+        "configCompleteRedirectUrl": [],
+        "dialogEventType": [
+          "CANCEL_DIALOG",
+          "REQUEST_DIALOG",
+          "SUBMIT_DIALOG",
+          "TYPE_UNSPECIFIED"
+        ],
+        "eventTime": [],
+        "isDialogEvent": [],
+        "message": [],
+        "space": [],
+        "thread": [],
+        "threadKey": [],
+        "token": [],
+        "type": [
+          "ADDED_TO_SPACE",
+          "APP_COMMAND",
+          "CARD_CLICKED",
+          "MESSAGE",
+          "REMOVED_FROM_SPACE",
+          "UNSPECIFIED",
+          "WIDGET_UPDATED"
+        ],
+        "user": []
+      },
+      "Dialog": {
+        "body": []
+      },
+      "DialogAction": {
+        "actionStatus": [],
+        "dialog": []
+      },
+      "DoNotDisturbMetadata": {
+        "expirationTime": []
+      },
+      "DriveDataRef": {
+        "driveFileId": []
+      },
+      "DriveLinkData": {
+        "driveDataRef": [],
+        "mimeType": []
+      },
+      "Elements": {
+        "citations": [],
+        "citedSources": []
+      },
+      "ElementsImage": {
+        "imageUri": []
+      },
+      "Emoji": {
+        "customEmoji": [],
+        "unicode": []
+      },
+      "EmojiReactionSummary": {
+        "emoji": [],
+        "reactionCount": []
+      },
+      "Empty": {},
+      "FindGroupChatsResponse": {
+        "nextPageToken": [],
+        "spaces": []
+      },
+      "Footer": {
+        "text": []
+      },
+      "FormAction": {
+        "actionMethodName": [],
+        "parameters": []
+      },
+      "ForwardedMetadata": {
+        "space": [],
+        "spaceDisplayName": []
+      },
+      "GoogleAppsCardV1Action": {
+        "allWidgetsAreRequired": [],
+        "function": [],
+        "interaction": [
+          "INTERACTION_UNSPECIFIED",
+          "OPEN_DIALOG"
+        ],
+        "loadIndicator": [
+          "NONE",
+          "SPINNER"
+        ],
+        "parameters": [],
+        "persistValues": [],
+        "requiredWidgets": []
+      },
+      "GoogleAppsCardV1ActionParameter": {
+        "key": [],
+        "value": []
+      },
+      "GoogleAppsCardV1BorderStyle": {
+        "cornerRadius": [],
+        "strokeColor": [],
+        "type": [
+          "BORDER_TYPE_UNSPECIFIED",
+          "NO_BORDER",
+          "STROKE"
+        ]
+      },
+      "GoogleAppsCardV1Button": {
+        "altText": [],
+        "color": [],
+        "disabled": [],
+        "icon": [],
+        "onClick": [],
+        "text": [],
+        "type": [
+          "BORDERLESS",
+          "FILLED",
+          "FILLED_TONAL",
+          "OUTLINED",
+          "TYPE_UNSPECIFIED"
+        ]
+      },
+      "GoogleAppsCardV1ButtonList": {
+        "buttons": []
+      },
+      "GoogleAppsCardV1Card": {
+        "cardActions": [],
+        "displayStyle": [
+          "DISPLAY_STYLE_UNSPECIFIED",
+          "PEEK",
+          "REPLACE"
+        ],
+        "expressionData": [],
+        "fixedFooter": [],
+        "header": [],
+        "name": [],
+        "peekCardHeader": [],
+        "sectionDividerStyle": [
+          "DIVIDER_STYLE_UNSPECIFIED",
+          "NO_DIVIDER",
+          "SOLID_DIVIDER"
+        ],
+        "sections": []
+      },
+      "GoogleAppsCardV1CardAction": {
+        "actionLabel": [],
+        "onClick": []
+      },
+      "GoogleAppsCardV1CardFixedFooter": {
+        "primaryButton": [],
+        "secondaryButton": []
+      },
+      "GoogleAppsCardV1CardHeader": {
+        "imageAltText": [],
+        "imageType": [
+          "CIRCLE",
+          "SQUARE"
+        ],
+        "imageUrl": [],
+        "subtitle": [],
+        "title": []
+      },
+      "GoogleAppsCardV1Carousel": {
+        "carouselCards": []
+      },
+      "GoogleAppsCardV1CarouselCard": {
+        "footerWidgets": [],
+        "widgets": []
+      },
+      "GoogleAppsCardV1Chip": {
+        "altText": [],
+        "disabled": [],
+        "enabled": [],
+        "icon": [],
+        "label": [],
+        "onClick": []
+      },
+      "GoogleAppsCardV1ChipList": {
+        "chips": [],
+        "layout": [
+          "HORIZONTAL_SCROLLABLE",
+          "LAYOUT_UNSPECIFIED",
+          "WRAPPED"
+        ]
+      },
+      "GoogleAppsCardV1CollapseControl": {
+        "collapseButton": [],
+        "expandButton": [],
+        "horizontalAlignment": [
+          "CENTER",
+          "END",
+          "HORIZONTAL_ALIGNMENT_UNSPECIFIED",
+          "START"
+        ]
+      },
+      "GoogleAppsCardV1Column": {
+        "horizontalAlignment": [
+          "CENTER",
+          "END",
+          "HORIZONTAL_ALIGNMENT_UNSPECIFIED",
+          "START"
+        ],
+        "horizontalSizeStyle": [
+          "FILL_AVAILABLE_SPACE",
+          "FILL_MINIMUM_SPACE",
+          "HORIZONTAL_SIZE_STYLE_UNSPECIFIED"
+        ],
+        "verticalAlignment": [
+          "BOTTOM",
+          "CENTER",
+          "TOP",
+          "VERTICAL_ALIGNMENT_UNSPECIFIED"
+        ],
+        "widgets": []
+      },
+      "GoogleAppsCardV1Columns": {
+        "columnItems": []
+      },
+      "GoogleAppsCardV1CommonWidgetAction": {
+        "updateVisibilityAction": []
+      },
+      "GoogleAppsCardV1Condition": {
+        "actionRuleId": [],
+        "expressionDataCondition": []
+      },
+      "GoogleAppsCardV1DataSourceConfig": {
+        "minCharactersTrigger": [],
+        "platformDataSource": [],
+        "remoteDataSource": []
+      },
+      "GoogleAppsCardV1DateTimePicker": {
+        "hostAppDataSource": [],
+        "label": [],
+        "name": [],
+        "onChangeAction": [],
+        "timezoneOffsetDate": [],
+        "type": [
+          "DATE_AND_TIME",
+          "DATE_ONLY",
+          "TIME_ONLY"
+        ],
+        "valueMsEpoch": []
+      },
+      "GoogleAppsCardV1DecoratedText": {
+        "bottomLabel": [],
+        "bottomLabelText": [],
+        "button": [],
+        "contentText": [],
+        "endIcon": [],
+        "icon": [],
+        "onClick": [],
+        "startIcon": [],
+        "startIconVerticalAlignment": [
+          "BOTTOM",
+          "MIDDLE",
+          "TOP",
+          "VERTICAL_ALIGNMENT_UNSPECIFIED"
+        ],
+        "switchControl": [],
+        "text": [],
+        "topLabel": [],
+        "topLabelText": [],
+        "wrapText": []
+      },
+      "GoogleAppsCardV1Divider": {},
+      "GoogleAppsCardV1EventAction": {
+        "actionRuleId": [],
+        "commonWidgetAction": [],
+        "postEventTriggers": []
+      },
+      "GoogleAppsCardV1ExpressionData": {
+        "conditions": [],
+        "eventActions": [],
+        "expression": [],
+        "id": []
+      },
+      "GoogleAppsCardV1ExpressionDataCondition": {
+        "conditionType": [
+          "CONDITION_TYPE_UNSPECIFIED",
+          "EXPRESSION_EVALUATION_FAILURE",
+          "EXPRESSION_EVALUATION_SUCCESS"
+        ]
+      },
+      "GoogleAppsCardV1Grid": {
+        "borderStyle": [],
+        "columnCount": [],
+        "items": [],
+        "onClick": [],
+        "title": []
+      },
+      "GoogleAppsCardV1GridItem": {
+        "id": [],
+        "image": [],
+        "layout": [
+          "GRID_ITEM_LAYOUT_UNSPECIFIED",
+          "TEXT_ABOVE",
+          "TEXT_BELOW"
+        ],
+        "subtitle": [],
+        "title": []
+      },
+      "GoogleAppsCardV1Icon": {
+        "altText": [],
+        "iconUrl": [],
+        "imageType": [
+          "CIRCLE",
+          "SQUARE"
+        ],
+        "knownIcon": [],
+        "materialIcon": []
+      },
+      "GoogleAppsCardV1Image": {
+        "altText": [],
+        "imageUrl": [],
+        "onClick": []
+      },
+      "GoogleAppsCardV1ImageComponent": {
+        "altText": [],
+        "borderStyle": [],
+        "cropStyle": [],
+        "imageUri": []
+      },
+      "GoogleAppsCardV1ImageCropStyle": {
+        "aspectRatio": [],
+        "type": [
+          "CIRCLE",
+          "IMAGE_CROP_TYPE_UNSPECIFIED",
+          "RECTANGLE_4_3",
+          "RECTANGLE_CUSTOM",
+          "SQUARE"
+        ]
+      },
+      "GoogleAppsCardV1MaterialIcon": {
+        "fill": [],
+        "grade": [],
+        "name": [],
+        "weight": []
+      },
+      "GoogleAppsCardV1NestedWidget": {
+        "buttonList": [],
+        "image": [],
+        "textParagraph": []
+      },
+      "GoogleAppsCardV1OnClick": {
+        "action": [],
+        "card": [],
+        "openDynamicLinkAction": [],
+        "openLink": [],
+        "overflowMenu": []
+      },
+      "GoogleAppsCardV1OpenLink": {
+        "onClose": [
+          "NOTHING",
+          "RELOAD"
+        ],
+        "openAs": [
+          "FULL_SIZE",
+          "OVERLAY"
+        ],
+        "url": []
+      },
+      "GoogleAppsCardV1OverflowMenu": {
+        "items": []
+      },
+      "GoogleAppsCardV1OverflowMenuItem": {
+        "disabled": [],
+        "onClick": [],
+        "startIcon": [],
+        "text": []
+      },
+      "GoogleAppsCardV1PlatformDataSource": {
+        "commonDataSource": [
+          "UNKNOWN",
+          "USER"
+        ],
+        "hostAppDataSource": []
+      },
+      "GoogleAppsCardV1Section": {
+        "collapseControl": [],
+        "collapsible": [],
+        "header": [],
+        "id": [],
+        "uncollapsibleWidgetsCount": [],
+        "widgets": []
+      },
+      "GoogleAppsCardV1SelectionInput": {
+        "dataSourceConfigs": [],
+        "externalDataSource": [],
+        "hintText": [],
+        "items": [],
+        "label": [],
+        "multiSelectMaxSelectedItems": [],
+        "multiSelectMinQueryLength": [],
+        "name": [],
+        "onChangeAction": [],
+        "platformDataSource": [],
+        "type": [
+          "CHECK_BOX",
+          "DROPDOWN",
+          "MULTI_SELECT",
+          "RADIO_BUTTON",
+          "SWITCH"
+        ]
+      },
+      "GoogleAppsCardV1SelectionItem": {
+        "bottomText": [],
+        "selected": [],
+        "startIconUri": [],
+        "text": [],
+        "value": []
+      },
+      "GoogleAppsCardV1SuggestionItem": {
+        "text": []
+      },
+      "GoogleAppsCardV1Suggestions": {
+        "items": []
+      },
+      "GoogleAppsCardV1SwitchControl": {
+        "controlType": [
+          "CHECKBOX",
+          "CHECK_BOX",
+          "SWITCH"
+        ],
+        "name": [],
+        "onChangeAction": [],
+        "selected": [],
+        "value": []
+      },
+      "GoogleAppsCardV1TextInput": {
+        "autoCompleteAction": [],
+        "hintText": [],
+        "hostAppDataSource": [],
+        "initialSuggestions": [],
+        "label": [],
+        "name": [],
+        "onChangeAction": [],
+        "placeholderText": [],
+        "type": [
+          "MULTIPLE_LINE",
+          "SINGLE_LINE"
+        ],
+        "validation": [],
+        "value": []
+      },
+      "GoogleAppsCardV1TextParagraph": {
+        "maxLines": [],
+        "text": [],
+        "textSyntax": [
+          "HTML",
+          "MARKDOWN",
+          "TEXT_SYNTAX_UNSPECIFIED"
+        ]
+      },
+      "GoogleAppsCardV1Trigger": {
+        "actionRuleId": []
+      },
+      "GoogleAppsCardV1UpdateVisibilityAction": {
+        "visibility": [
+          "HIDDEN",
+          "VISIBILITY_UNSPECIFIED",
+          "VISIBLE"
+        ]
+      },
+      "GoogleAppsCardV1Validation": {
+        "characterLimit": [],
+        "inputType": [
+          "EMAIL",
+          "EMOJI_PICKER",
+          "FLOAT",
+          "INPUT_TYPE_UNSPECIFIED",
+          "INTEGER",
+          "TEXT"
+        ]
+      },
+      "GoogleAppsCardV1Widget": {
+        "buttonList": [],
+        "carousel": [],
+        "chipList": [],
+        "columns": [],
+        "dateTimePicker": [],
+        "decoratedText": [],
+        "divider": [],
+        "eventActions": [],
+        "grid": [],
+        "horizontalAlignment": [
+          "CENTER",
+          "END",
+          "HORIZONTAL_ALIGNMENT_UNSPECIFIED",
+          "START"
+        ],
+        "id": [],
+        "image": [],
+        "selectionInput": [],
+        "textInput": [],
+        "textParagraph": [],
+        "visibility": [
+          "HIDDEN",
+          "VISIBILITY_UNSPECIFIED",
+          "VISIBLE"
+        ]
+      },
+      "GoogleAppsCardV1Widgets": {
+        "buttonList": [],
+        "chipList": [],
+        "dateTimePicker": [],
+        "decoratedText": [],
+        "image": [],
+        "selectionInput": [],
+        "textInput": [],
+        "textParagraph": []
+      },
+      "GoogleChatV1Section": {
+        "displayName": [],
+        "name": [],
+        "sortOrder": [],
+        "type": [
+          "CUSTOM_SECTION",
+          "DEFAULT_APPS",
+          "DEFAULT_DIRECT_MESSAGES",
+          "DEFAULT_SPACES",
+          "SECTION_TYPE_UNSPECIFIED"
+        ]
+      },
+      "Group": {
+        "name": []
+      },
+      "HostAppDataSourceMarkup": {
+        "chatDataSource": [],
+        "workflowDataSource": []
+      },
+      "Image": {
+        "aspectRatio": [],
+        "imageUrl": [],
+        "onClick": []
+      },
+      "ImageButton": {
+        "icon": [
+          "AIRPLANE",
+          "BOOKMARK",
+          "BUS",
+          "CAR",
+          "CLOCK",
+          "CONFIRMATION_NUMBER_ICON",
+          "DESCRIPTION",
+          "DOLLAR",
+          "EMAIL",
+          "EVENT_PERFORMER",
+          "EVENT_SEAT",
+          "FLIGHT_ARRIVAL",
+          "FLIGHT_DEPARTURE",
+          "HOTEL",
+          "HOTEL_ROOM_TYPE",
+          "ICON_UNSPECIFIED",
+          "INVITE",
+          "MAP_PIN",
+          "MEMBERSHIP",
+          "MULTIPLE_PEOPLE",
+          "OFFER",
+          "PERSON",
+          "PHONE",
+          "RESTAURANT_ICON",
+          "SHOPPING_CART",
+          "STAR",
+          "STORE",
+          "TICKET",
+          "TRAIN",
+          "VIDEO_CAMERA",
+          "VIDEO_PLAY"
+        ],
+        "iconUrl": [],
+        "name": [],
+        "onClick": []
+      },
+      "Inputs": {
+        "dateInput": [],
+        "dateTimeInput": [],
+        "stringInputs": [],
+        "timeInput": []
+      },
+      "KeyValue": {
+        "bottomLabel": [],
+        "button": [],
+        "content": [],
+        "contentMultiline": [],
+        "icon": [
+          "AIRPLANE",
+          "BOOKMARK",
+          "BUS",
+          "CAR",
+          "CLOCK",
+          "CONFIRMATION_NUMBER_ICON",
+          "DESCRIPTION",
+          "DOLLAR",
+          "EMAIL",
+          "EVENT_PERFORMER",
+          "EVENT_SEAT",
+          "FLIGHT_ARRIVAL",
+          "FLIGHT_DEPARTURE",
+          "HOTEL",
+          "HOTEL_ROOM_TYPE",
+          "ICON_UNSPECIFIED",
+          "INVITE",
+          "MAP_PIN",
+          "MEMBERSHIP",
+          "MULTIPLE_PEOPLE",
+          "OFFER",
+          "PERSON",
+          "PHONE",
+          "RESTAURANT_ICON",
+          "SHOPPING_CART",
+          "STAR",
+          "STORE",
+          "TICKET",
+          "TRAIN",
+          "VIDEO_CAMERA",
+          "VIDEO_PLAY"
+        ],
+        "iconUrl": [],
+        "onClick": [],
+        "topLabel": []
+      },
+      "ListCustomEmojisResponse": {
+        "customEmojis": [],
+        "nextPageToken": []
+      },
+      "ListMembershipsResponse": {
+        "memberships": [],
+        "nextPageToken": []
+      },
+      "ListMessagePinsResponse": {
+        "messagePins": [],
+        "nextPageToken": []
+      },
+      "ListMessagesResponse": {
+        "messages": [],
+        "nextPageToken": []
+      },
+      "ListReactionsResponse": {
+        "nextPageToken": [],
+        "reactions": []
+      },
+      "ListSectionItemsResponse": {
+        "nextPageToken": [],
+        "sectionItems": []
+      },
+      "ListSectionsResponse": {
+        "nextPageToken": [],
+        "sections": []
+      },
+      "ListSpaceEventsResponse": {
+        "nextPageToken": [],
+        "spaceEvents": []
+      },
+      "ListSpacesResponse": {
+        "nextPageToken": [],
+        "spaces": []
+      },
+      "MarkAsActiveRequest": {
+        "expireTime": [],
+        "ttl": []
+      },
+      "MarkAsAwayRequest": {},
+      "MarkAsDoNotDisturbRequest": {
+        "expireTime": [],
+        "ttl": []
+      },
+      "MatchedUrl": {
+        "url": []
+      },
+      "Media": {
+        "resourceName": []
+      },
+      "MeetSpaceLinkData": {
+        "huddleStatus": [
+          "ENDED",
+          "HUDDLE_STATUS_UNSPECIFIED",
+          "MISSED",
+          "STARTED"
+        ],
+        "meetingCode": [],
+        "type": [
+          "HUDDLE",
+          "MEETING",
+          "TYPE_UNSPECIFIED"
+        ]
+      },
+      "Membership": {
+        "affiliation": [
+          "AFFILIATION_UNSPECIFIED",
+          "EXTERNAL",
+          "INTERNAL",
+          "MANAGED_EXTERNAL"
+        ],
+        "createTime": [],
+        "deleteTime": [],
+        "groupMember": [],
+        "member": [],
+        "name": [],
+        "role": [
+          "MEMBERSHIP_ROLE_UNSPECIFIED",
+          "ROLE_ASSISTANT_MANAGER",
+          "ROLE_MANAGER",
+          "ROLE_MEMBER"
+        ],
+        "state": [
+          "INVITED",
+          "JOINED",
+          "MEMBERSHIP_STATE_UNSPECIFIED",
+          "NOT_A_MEMBER"
+        ]
+      },
+      "MembershipBatchCreatedEventData": {
+        "memberships": []
+      },
+      "MembershipBatchDeletedEventData": {
+        "memberships": []
+      },
+      "MembershipBatchUpdatedEventData": {
+        "memberships": []
+      },
+      "MembershipCount": {
+        "joinedDirectHumanUserCount": [],
+        "joinedGroupCount": []
+      },
+      "MembershipCreatedEventData": {
+        "membership": []
+      },
+      "MembershipDeletedEventData": {
+        "membership": []
+      },
+      "MembershipUpdatedEventData": {
+        "membership": []
+      },
+      "Message": {
+        "accessoryWidgets": [],
+        "actionResponse": [],
+        "annotations": [],
+        "argumentText": [],
+        "attachedGifs": [],
+        "attachment": [],
+        "cards": [],
+        "cardsV2": [],
+        "clientAssignedMessageId": [],
+        "createTime": [],
+        "deleteTime": [],
+        "deletionMetadata": [],
+        "elements": [],
+        "emojiReactionSummaries": [],
+        "fallbackText": [],
+        "formattedText": [],
+        "lastUpdateTime": [],
+        "markupSyntax": [
+          "MARKUP_SYNTAX_CHAT",
+          "MARKUP_SYNTAX_MARKDOWN",
+          "MARKUP_SYNTAX_UNSPECIFIED"
+        ],
+        "matchedUrl": [],
+        "name": [],
+        "privateMessageViewer": [],
+        "quotedMessageMetadata": [],
+        "sender": [],
+        "silent": [],
+        "slashCommand": [],
+        "space": [],
+        "text": [],
+        "thread": [],
+        "threadReply": []
+      },
+      "MessageBatchCreatedEventData": {
+        "messages": []
+      },
+      "MessageBatchDeletedEventData": {
+        "messages": []
+      },
+      "MessageBatchUpdatedEventData": {
+        "messages": []
+      },
+      "MessageCreatedEventData": {
+        "message": []
+      },
+      "MessageDeletedEventData": {
+        "message": []
+      },
+      "MessagePin": {
+        "message": [],
+        "name": []
+      },
+      "MessageUpdatedEventData": {
+        "message": []
+      },
+      "MoveSectionItemRequest": {
+        "targetSection": []
+      },
+      "MoveSectionItemResponse": {
+        "sectionItem": []
+      },
+      "OnClick": {
+        "action": [],
+        "openLink": []
+      },
+      "OpenLink": {
+        "url": []
+      },
+      "PermissionSetting": {
+        "assistantManagersAllowed": [],
+        "managersAllowed": [],
+        "membersAllowed": []
+      },
+      "PermissionSettings": {
+        "manageApps": [],
+        "manageMembersAndGroups": [],
+        "manageWebhooks": [],
+        "modifySpaceDetails": [],
+        "postMessages": [],
+        "replyMessages": [],
+        "toggleHistory": [],
+        "useAtMentionAll": [],
+        "viewSpaceMembership": []
+      },
+      "PositionSectionRequest": {
+        "relativePosition": [
+          "END",
+          "POSITION_UNSPECIFIED",
+          "START"
+        ],
+        "sortOrder": []
+      },
+      "PositionSectionResponse": {
+        "section": []
+      },
+      "Principal": {
+        "audience": []
+      },
+      "QuotedMessageMetadata": {
+        "forwardedMetadata": [],
+        "lastUpdateTime": [],
+        "name": [],
+        "quoteType": [
+          "FORWARD",
+          "QUOTE_TYPE_UNSPECIFIED",
+          "REPLY"
+        ],
+        "quotedMessageSnapshot": []
+      },
+      "QuotedMessageSnapshot": {
+        "annotations": [],
+        "attachments": [],
+        "formattedText": [],
+        "sender": [],
+        "text": []
+      },
+      "Reaction": {
+        "emoji": [],
+        "name": [],
+        "user": []
+      },
+      "ReactionBatchCreatedEventData": {
+        "reactions": []
+      },
+      "ReactionBatchDeletedEventData": {
+        "reactions": []
+      },
+      "ReactionCreatedEventData": {
+        "reaction": []
+      },
+      "ReactionDeletedEventData": {
+        "reaction": []
+      },
+      "ReplaceMessageCardsRequest": {
+        "cardsV2": []
+      },
+      "ReplaceMessageCardsResponse": {},
+      "RichLinkMetadata": {
+        "calendarEventLinkData": [],
+        "chatSpaceLinkData": [],
+        "driveLinkData": [],
+        "meetSpaceLinkData": [],
+        "richLinkType": [
+          "CALENDAR_EVENT",
+          "CHAT_SPACE",
+          "DRIVE_FILE",
+          "GMAIL_MESSAGE",
+          "MEET_SPACE",
+          "RICH_LINK_TYPE_UNSPECIFIED"
+        ],
+        "uri": []
+      },
+      "SearchMessageResult": {
+        "message": [],
+        "read": [],
+        "spaceMuteSetting": [
+          "MUTED",
+          "MUTE_SETTING_UNSPECIFIED",
+          "UNMUTED"
+        ]
+      },
+      "SearchMessagesRequest": {
+        "filter": [],
+        "markupSyntax": [
+          "MARKUP_SYNTAX_CHAT",
+          "MARKUP_SYNTAX_MARKDOWN",
+          "MARKUP_SYNTAX_UNSPECIFIED"
+        ],
+        "orderBy": [],
+        "pageSize": [],
+        "pageToken": [],
+        "view": [
+          "SEARCH_MESSAGES_VIEW_BASIC",
+          "SEARCH_MESSAGES_VIEW_FULL",
+          "SEARCH_MESSAGES_VIEW_UNSPECIFIED"
+        ]
+      },
+      "SearchMessagesResponse": {
+        "nextPageToken": [],
+        "results": []
+      },
+      "SearchSpaceResult": {
+        "space": []
+      },
+      "SearchSpacesResponse": {
+        "nextPageToken": [],
+        "results": [],
+        "spaces": [],
+        "totalSize": []
+      },
+      "Section": {
+        "header": [],
+        "widgets": []
+      },
+      "SectionItem": {
+        "name": [],
+        "space": []
+      },
+      "SelectionItems": {
+        "items": []
+      },
+      "SetUpSpaceRequest": {
+        "memberships": [],
+        "requestId": [],
+        "space": []
+      },
+      "SlashCommand": {
+        "commandId": []
+      },
+      "SlashCommandMetadata": {
+        "bot": [],
+        "commandId": [],
+        "commandName": [],
+        "triggersDialog": [],
+        "type": [
+          "ADD",
+          "INVOKE",
+          "TYPE_UNSPECIFIED"
+        ]
+      },
+      "Snippet": {
+        "imagePreview": [],
+        "text": []
+      },
+      "Space": {
+        "accessSettings": [],
+        "adminInstalled": [],
+        "createTime": [],
+        "customer": [],
+        "displayName": [],
+        "externalUserAllowed": [],
+        "importMode": [],
+        "importModeExpireTime": [],
+        "lastActiveTime": [],
+        "membershipCount": [],
+        "name": [],
+        "permissionSettings": [],
+        "predefinedPermissionSettings": [
+          "ANNOUNCEMENT_SPACE",
+          "COLLABORATION_SPACE",
+          "PREDEFINED_PERMISSION_SETTINGS_UNSPECIFIED"
+        ],
+        "singleUserBotDm": [],
+        "spaceDetails": [],
+        "spaceHistoryState": [
+          "HISTORY_OFF",
+          "HISTORY_ON",
+          "HISTORY_STATE_UNSPECIFIED"
+        ],
+        "spaceThreadingState": [
+          "GROUPED_MESSAGES",
+          "SPACE_THREADING_STATE_UNSPECIFIED",
+          "THREADED_MESSAGES",
+          "UNTHREADED_MESSAGES"
+        ],
+        "spaceType": [
+          "DIRECT_MESSAGE",
+          "GROUP_CHAT",
+          "SPACE",
+          "SPACE_TYPE_UNSPECIFIED"
+        ],
+        "spaceUri": [],
+        "threaded": [],
+        "type": [
+          "DM",
+          "ROOM",
+          "TYPE_UNSPECIFIED"
+        ]
+      },
+      "SpaceBatchUpdatedEventData": {
+        "spaces": []
+      },
+      "SpaceDataSource": {
+        "defaultToCurrentSpace": []
+      },
+      "SpaceDetails": {
+        "description": [],
+        "guidelines": []
+      },
+      "SpaceEvent": {
+        "eventTime": [],
+        "eventType": [],
+        "membershipBatchCreatedEventData": [],
+        "membershipBatchDeletedEventData": [],
+        "membershipBatchUpdatedEventData": [],
+        "membershipCreatedEventData": [],
+        "membershipDeletedEventData": [],
+        "membershipUpdatedEventData": [],
+        "messageBatchCreatedEventData": [],
+        "messageBatchDeletedEventData": [],
+        "messageBatchUpdatedEventData": [],
+        "messageCreatedEventData": [],
+        "messageDeletedEventData": [],
+        "messageUpdatedEventData": [],
+        "name": [],
+        "reactionBatchCreatedEventData": [],
+        "reactionBatchDeletedEventData": [],
+        "reactionCreatedEventData": [],
+        "reactionDeletedEventData": [],
+        "spaceBatchUpdatedEventData": [],
+        "spaceUpdatedEventData": []
+      },
+      "SpaceNotificationSetting": {
+        "muteSetting": [
+          "MUTED",
+          "MUTE_SETTING_UNSPECIFIED",
+          "UNMUTED"
+        ],
+        "name": [],
+        "notificationSetting": [
+          "ALL",
+          "FOR_YOU",
+          "MAIN_CONVERSATIONS",
+          "NOTIFICATION_SETTING_UNSPECIFIED",
+          "OFF"
+        ]
+      },
+      "SpaceReadState": {
+        "lastReadTime": [],
+        "name": []
+      },
+      "SpaceUpdatedEventData": {
+        "space": []
+      },
+      "Status": {
+        "code": [],
+        "details": [],
+        "message": []
+      },
+      "StringInputs": {
+        "value": []
+      },
+      "TextButton": {
+        "onClick": [],
+        "text": []
+      },
+      "TextParagraph": {
+        "text": []
+      },
+      "Thread": {
+        "name": [],
+        "threadKey": []
+      },
+      "ThreadReadState": {
+        "lastReadTime": [],
+        "name": []
+      },
+      "TimeInput": {
+        "hours": [],
+        "minutes": []
+      },
+      "TimeZone": {
+        "id": [],
+        "offset": []
+      },
+      "UpdatedWidget": {
+        "suggestions": [],
+        "widget": []
+      },
+      "UploadAttachmentRequest": {
+        "filename": []
+      },
+      "UploadAttachmentResponse": {
+        "attachmentDataRef": []
+      },
+      "User": {
+        "avatarUrl": [],
+        "displayName": [],
+        "domainId": [],
+        "email": [],
+        "isAnonymous": [],
+        "name": [],
+        "type": [
+          "BOT",
+          "HUMAN",
+          "TYPE_UNSPECIFIED"
+        ]
+      },
+      "UserMentionMetadata": {
+        "type": [
+          "ADD",
+          "MENTION",
+          "TYPE_UNSPECIFIED"
+        ],
+        "user": []
+      },
+      "WidgetMarkup": {
+        "buttons": [],
+        "image": [],
+        "keyValue": [],
+        "textParagraph": []
+      },
+      "WorkflowDataSourceMarkup": {
+        "includeVariables": [],
+        "type": [
+          "SPACE",
+          "UNKNOWN",
+          "USER",
+          "USER_WITH_FREE_FORM"
+        ]
+      }
+    },
+    "scopes": [
+      "https://www.googleapis.com/auth/chat.admin.delete",
+      "https://www.googleapis.com/auth/chat.admin.memberships",
+      "https://www.googleapis.com/auth/chat.admin.memberships.readonly",
+      "https://www.googleapis.com/auth/chat.admin.spaces",
+      "https://www.googleapis.com/auth/chat.admin.spaces.readonly",
+      "https://www.googleapis.com/auth/chat.app.all.memberships.readonly",
+      "https://www.googleapis.com/auth/chat.app.all.messages.readonly",
+      "https://www.googleapis.com/auth/chat.app.all.spaces.readonly",
+      "https://www.googleapis.com/auth/chat.app.delete",
+      "https://www.googleapis.com/auth/chat.app.memberships",
+      "https://www.googleapis.com/auth/chat.app.memberships.readonly",
+      "https://www.googleapis.com/auth/chat.app.messages.readonly",
+      "https://www.googleapis.com/auth/chat.app.spaces",
+      "https://www.googleapis.com/auth/chat.app.spaces.create",
+      "https://www.googleapis.com/auth/chat.app.spaces.readonly",
+      "https://www.googleapis.com/auth/chat.bot",
+      "https://www.googleapis.com/auth/chat.customemojis",
+      "https://www.googleapis.com/auth/chat.customemojis.readonly",
+      "https://www.googleapis.com/auth/chat.delete",
+      "https://www.googleapis.com/auth/chat.import",
+      "https://www.googleapis.com/auth/chat.memberships",
+      "https://www.googleapis.com/auth/chat.memberships.app",
+      "https://www.googleapis.com/auth/chat.memberships.readonly",
+      "https://www.googleapis.com/auth/chat.messages",
+      "https://www.googleapis.com/auth/chat.messages.create",
+      "https://www.googleapis.com/auth/chat.messages.reactions",
+      "https://www.googleapis.com/auth/chat.messages.reactions.create",
+      "https://www.googleapis.com/auth/chat.messages.reactions.readonly",
+      "https://www.googleapis.com/auth/chat.messages.readonly",
+      "https://www.googleapis.com/auth/chat.spaces",
+      "https://www.googleapis.com/auth/chat.spaces.create",
+      "https://www.googleapis.com/auth/chat.spaces.pins",
+      "https://www.googleapis.com/auth/chat.spaces.pins.readonly",
+      "https://www.googleapis.com/auth/chat.spaces.readonly",
+      "https://www.googleapis.com/auth/chat.users.availability",
+      "https://www.googleapis.com/auth/chat.users.availability.readonly",
+      "https://www.googleapis.com/auth/chat.users.readstate",
+      "https://www.googleapis.com/auth/chat.users.readstate.readonly",
+      "https://www.googleapis.com/auth/chat.users.sections",
+      "https://www.googleapis.com/auth/chat.users.sections.readonly",
+      "https://www.googleapis.com/auth/chat.users.spacesettings"
+    ],
+    "structure_sha256": "5cad6a9da305b623852c530b5043e3283595e864c347fce2b588c76071d44b63"
+  },
+  "release_feed": {
+    "entries": {
+      "tag:google.com,2016:chat-release-notes#April_01_2026": "b291e97e965b8e3014f8565018d76afdd96a97a2cf8ed861343082d23ba92540",
+      "tag:google.com,2016:chat-release-notes#April_10_2026": "acfdd18b84fdcddb68f98e4da35d9ca65acb87ef75fa3482743b0ef4e5722885",
+      "tag:google.com,2016:chat-release-notes#April_15_2026": "9ca52e01630ad3e499af6e6bad440e875282159a2afcd1c4a22b531dafbb9caa",
+      "tag:google.com,2016:chat-release-notes#April_22_2026": "04f8278ec9b8fe01bef3c3009844ef9bd0974486c638599a907bcb479b753c58",
+      "tag:google.com,2016:chat-release-notes#August_04_2026": "80a948e34a371a35acd11af71c47a442b80ceb954eb498876ea3a1a674b7800e",
+      "tag:google.com,2016:chat-release-notes#August_07_2026": "3dcb62d250efb30e3fbbf95351932a8ef04ec3467c9e07391faef7dd38473ab4",
+      "tag:google.com,2016:chat-release-notes#August_19_2026": "c03951698354e1bb8a956e5d3d8a706729a49ec772305e7c6053e2d77cb48b6a",
+      "tag:google.com,2016:chat-release-notes#August_26_2026": "2c7758059035d4606e806d1c10cc02008def01f62dabb499a4bbaaeef9ec8d65",
+      "tag:google.com,2016:chat-release-notes#August_28_2026": "2c5e50aecac5347a93b233fa6e7893225e10cc3258a25de018af967af57f0c05",
+      "tag:google.com,2016:chat-release-notes#July_07_2026": "c551291edb373c8e182c63532067f4e1dad8048d8b5d5a76d101fec5810941d5",
+      "tag:google.com,2016:chat-release-notes#July_09_2026": "1bccba2520dd271b68aea666cab9c74268c8a4783abd5129e768bf89f78f6e24",
+      "tag:google.com,2016:chat-release-notes#July_13_2026": "3dd0401bc75fceced99891184811bda2172cace84d8b5e2bd2f1d44f8040505b",
+      "tag:google.com,2016:chat-release-notes#July_17_2026": "0c08dd44d1500d7169a2047517a2ad76a45f8cd3cee0e4dd11c5a876be271f0c",
+      "tag:google.com,2016:chat-release-notes#July_30_2026": "8555ead07751e087bab962a19f6e0cfbaef57968e6f15f190053ffb47f496374",
+      "tag:google.com,2016:chat-release-notes#June_12_2026": "2628f543f8e97a09c5e35c69171f948423615298de8dd195fe15854a0b4ff125",
+      "tag:google.com,2016:chat-release-notes#June_15_2026": "0c0d1d54da6e3781dced6e0db8cb0b0971ba0b02f5a54239a578e0be0245ba08",
+      "tag:google.com,2016:chat-release-notes#May_07_2026": "f1034999100f49b2f13125910f91b2ce90ef73979fd7e651b2704c4a5d9e5adc",
+      "tag:google.com,2016:chat-release-notes#May_08_2026": "2328e1cacc43b6537d3624d47f3e3b7a3e90ff24a7490647a36eca1012ba318a",
+      "tag:google.com,2016:chat-release-notes#May_12_2026": "0a7d4f9755cd7f67f29eab9e06a267c163cab0a6013391f76e5e94239b5acae5",
+      "tag:google.com,2016:chat-release-notes#May_28_2026": "345a4dff584b92c6fd6205c64a3b11aab4c2ab5759d601101a9ce4c95ed6a282",
+      "tag:google.com,2016:chat-release-notes#November_03_2026": "48b67a6a6730d8d07ddc553de45033b5d264b7ed648048e82aa94915b1d43eac",
+      "tag:google.com,2016:chat-release-notes#November_04_2026": "e1d38917ca420df07a7e2bfcb21eb1572b34c8431cc9a4d480f2b635cba80514",
+      "tag:google.com,2016:chat-release-notes#October_12_2026": "d2a97a2efd28c33d05ce9915be5af263badda429a26a1d62005d0a2e74efdf3e",
+      "tag:google.com,2016:chat-release-notes#October_16_2026": "445ecda2f3dee68766a77eb3f81e7bc9f4ad0a5fca9c3deae5b1b29c458c60fa",
+      "tag:google.com,2016:chat-release-notes#October_23_2026": "ec7b78da9529d3d1280f737d79454b05d6c56d19efa6a2c072efc467630c4163",
+      "tag:google.com,2016:chat-release-notes#October_29_2026": "70c3c9022b2d722df678af0c7839c45690dc6e826ec5a7b7bdca245e95141470",
+      "tag:google.com,2016:chat-release-notes#October_30_2026": "b183364ca38c5d860cd0e236a21b4ecfc6247fea2c6de3e0c4664aadaec9b84f",
+      "tag:google.com,2016:chat-release-notes#September_18_2026": "cdfa46396ba43977bf48d1eedb9d7cf36a3ae945a187472df4464a533360f985",
+      "tag:google.com,2016:chat-release-notes#September_23_2026": "fee93d93a39545e051eed5ba0eb10ff7531b41b1f8724d1bd472d090d7b4e0c1",
+      "tag:google.com,2016:chat-release-notes#September_30_2026": "83ea9ab1f57eb498e1912de1e6def629ca733aad91e068d502fc9d242949a64d"
+    },
+    "latest_updated": "2026-11-04T00:00:00-08:00"
+  }
+}

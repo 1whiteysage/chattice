@@ -78,6 +78,14 @@ class AppCommandMetadataModel(_BoundaryModel):
     app_command_type: str | None = Field(default=None, alias="appCommandType")
 
 
+class CancelStreamModel(_BoundaryModel):
+    stream_message: str | None = Field(default=None, alias="streamMessage")
+
+
+class SystemCommandMetadataModel(_BoundaryModel):
+    cancel_stream: CancelStreamModel | None = Field(default=None, alias="cancelStream")
+
+
 class InteractionModel(_BoundaryModel):
     type: str
     event_time: str | None = Field(default=None, alias="eventTime")
@@ -91,6 +99,9 @@ class InteractionModel(_BoundaryModel):
     common: CommonEventModel | None = None
     app_command_metadata: AppCommandMetadataModel | None = Field(
         default=None, alias="appCommandMetadata"
+    )
+    system_command_metadata: SystemCommandMetadataModel | None = Field(
+        default=None, alias="systemCommandMetadata"
     )
 
 

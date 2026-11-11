@@ -1,8 +1,8 @@
 {
-  "chat_discovery_sha256": "986677b3213bfa95dc9042b1e745d82bc85af4cf615601a8d19e9451bdc17a48",
-  "chat_release_feed_sha256": "97ffdeb5908afe04719f9c7c8ddfb920f73aabd7835c7ffc7316b63a794ce7da",
-  "google_apps_card": "0.7.0",
-  "google_apps_chat": "0.10.5",
-  "google_auth": "2.57.1",
-  "google_cloud_pubsub": "2.40.0"
+  "chat_discovery_sha256": "da3e2f7c1a2107cec05998cf9881b0ebb2150efa421a8f87b861b17955ad2856",
+  "chat_release_feed_sha256": "b0d1577c0f077eef42b4586cc4d2819a8d4b69cd72822b2a8bf8e1982cb13173",
+  "google_apps_card": "0.7.1",
+  "google_apps_chat": "0.10.9",
+  "google_auth": "2.62.2",
+  "google_cloud_pubsub": "2.43.0"
 }

@@ -96,7 +96,9 @@ def test_unknown_operation_raises() -> None:
     from chattice.capabilities.registry import UnknownOperation
 
     try:
-        REGISTRY.spec(Operation.SPACES_SEARCH)
+        # Every Operation is registered in REGISTRY; an empty registry
+        # exercises the unknown-operation path.
+        OperationRegistry([]).spec(Operation.SPACES_SEARCH)
     except UnknownOperation as exc:
         assert "spaces.search" in str(exc)
     else:

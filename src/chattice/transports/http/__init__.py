@@ -10,10 +10,17 @@ from .response import (
     ResponseState,
     WidgetAutocomplete,
 )
-from .verifier import GoogleTokenVerifier, IncomingRequestVerifier, MockVerifier
+from .serializer import serialize_response
+from .verifier import (
+    AddOnTokenVerifier,
+    GoogleTokenVerifier,
+    IncomingRequestVerifier,
+    MockVerifier,
+)
 
 __all__ = [
     "SYNC_RESPONSE_DEADLINE",
+    "AddOnTokenVerifier",
     "DoubleResponseError",
     "GoogleTokenVerifier",
     "HTTPInteractionAdapter",
@@ -28,4 +35,5 @@ __all__ = [
     "ResponseState",
     "VerificationError",
     "WidgetAutocomplete",
+    "serialize_response",
 ]

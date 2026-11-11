@@ -13,19 +13,9 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
 from chattice.adapters.google_chat.exceptions import GoogleInteractionError
-from chattice.capabilities import ResponseCapabilities, can_open_dialog
-from chattice.cards import ActionStatus, Card, Dialog
+from chattice.capabilities import ResponseCapabilities
 from chattice.dispatcher import Dispatcher
-from chattice.events import (
-    ActionEvent,
-    AppHomeEvent,
-    DialogEventType,
-    Event,
-    FormSubmitEvent,
-    MessageEvent,
-    RemovedFromSpaceEvent,
-    WidgetUpdatedEvent,
-)
+from chattice.events import Event
 from chattice.idempotency import ClaimResult, IdempotencyStorage, new_owner
 from chattice.transports.http import (
     SYNC_RESPONSE_DEADLINE,
@@ -34,10 +24,8 @@ from chattice.transports.http import (
     IncomingRequestVerifier,
     InteractionContext,
     InteractionResponse,
-    RawInteractionResponse,
-    RequestConfigResponse,
     ResponseState,
-    WidgetAutocomplete,
+    serialize_response,
 )
 from chattice.transports.http.errors import VerificationError
 from chattice.transports.pubsub import (
@@ -157,110 +145,21 @@ class _PushDeliveryCoordinator:
             )
 
 
-def _serialize(payload: object, *, event: Event) -> Response:
-    if payload is None:
+def _serialize(
+    payload: object, *, event: Event, addon_action_url: str | None = None
+) -> Response:
+    body = serialize_response(payload, event=event, addon_action_url=addon_action_url)
+    if body is None:
         return Response(status_code=200)
-    if isinstance(event, RemovedFromSpaceEvent):
-        # Documented Google rule: after REMOVED_FROM_SPACE the app cannot
-        # respond — the user/channel is gone.
-        raise TypeError("REMOVED_FROM_SPACE cannot receive a response")
-    if isinstance(payload, str):
-        return JSONResponse({"text": payload})
-    if isinstance(payload, RawInteractionResponse):
-        try:
-            encoded = json.dumps(
-                payload.payload,
-                allow_nan=False,
-                ensure_ascii=False,
-                separators=(",", ":"),
-            )
-        except (TypeError, ValueError) as error:
-            raise TypeError(
-                f"Unsupported synchronous response payload {type(payload).__name__}"
-            ) from error
-        return Response(content=encoded, media_type="application/json")
-    if isinstance(payload, dict):
-        try:
-            encoded = json.dumps(
-                payload, allow_nan=False, ensure_ascii=False, separators=(",", ":")
-            )
-        except (TypeError, ValueError) as error:
-            raise TypeError(
-                f"Unsupported synchronous response payload {type(payload).__name__}"
-            ) from error
-        return Response(content=encoded, media_type="application/json")
-    if isinstance(payload, Dialog):
-        # the serializer guards with the SAME predicate that
-        # derives the DIALOGS capability — no second handwritten rule.
-        # SUBMIT/CANCEL actions cannot return a new dialog.
-        if can_open_dialog(event):
-            return JSONResponse(
-                {
-                    "actionResponse": {
-                        "type": "DIALOG",
-                        "dialogAction": payload.to_dict(),
-                    }
-                }
-            )
-        raise TypeError("Dialog responses require a command or a REQUEST_DIALOG action")
-    if isinstance(payload, ActionStatus):
-        if (
-            isinstance(event, ActionEvent)
-            and event.dialog is not None
-            and event.dialog.type == DialogEventType.SUBMIT_DIALOG
-        ):
-            return JSONResponse(
-                {
-                    "actionResponse": {
-                        "type": "DIALOG",
-                        "dialogAction": {"actionStatus": payload.to_dict()},
-                    }
-                }
-            )
-        raise TypeError("ActionStatus responses require a SUBMIT_DIALOG ActionEvent")
-    if isinstance(payload, Card):
-        if isinstance(event, (AppHomeEvent, FormSubmitEvent)):
-            navigation = "pushCard" if isinstance(event, AppHomeEvent) else "updateCard"
-            navigations = {"action": {"navigations": [{navigation: payload.to_dict()}]}}
-            if isinstance(event, FormSubmitEvent):
-                # Documented update shape for home-card widget interactions.
-                return JSONResponse({"renderActions": navigations})
-            return JSONResponse(navigations)
-        body: dict[str, object] = {
-            "cardsV2": [{"cardId": "card", "card": payload.to_dict()}],
-        }
-        if isinstance(event, MessageEvent):
-            # Link previews: a matched URL answer replaces the USER's message
-            # cards (ResponseType.UPDATE_USER_MESSAGE_CARDS). Plain messages
-            # get a NEW_MESSAGE response (no actionResponse).
-            if event.matched_url is not None:
-                body["actionResponse"] = {"type": "UPDATE_USER_MESSAGE_CARDS"}
-        elif isinstance(event, ActionEvent):
-            # Documented sender rule: bot messages update via UPDATE_MESSAGE,
-            # human messages via UPDATE_USER_MESSAGE_CARDS. Never guess —
-            # require the sender type from the wire payload.
-            if event.sender_type == "BOT":
-                body["actionResponse"] = {"type": "UPDATE_MESSAGE"}
-            elif event.sender_type == "HUMAN":
-                body["actionResponse"] = {"type": "UPDATE_USER_MESSAGE_CARDS"}
-            else:
-                raise TypeError(
-                    "Card responses to CARD_CLICKED require the original "
-                    "message sender type (BOT or HUMAN) — "
-                    f"got {event.sender_type!r}"
-                )
-        return JSONResponse(body)
-    if isinstance(payload, WidgetAutocomplete):
-        if not isinstance(event, WidgetUpdatedEvent):
-            raise TypeError(
-                "WidgetAutocomplete responses require a WIDGET_UPDATED event"
-            )
-        return JSONResponse(payload.to_dict())
-    if isinstance(payload, RequestConfigResponse):
-        return JSONResponse(payload.to_dict())
-    raise TypeError(
-        f"Unsupported synchronous response payload {type(payload).__name__}"
-    )
+    try:
+        encoded = json.dumps(
+            body, allow_nan=False, ensure_ascii=False, separators=(",", ":")
+        )
+    except (TypeError, ValueError) as error:
+        raise TypeError(
+            f"Unsupported synchronous response payload {type(payload).__name__}"
+        ) from error
+    return Response(content=encoded, media_type="application/json")
 
 
 def create_chat_router(
@@ -268,12 +167,23 @@ def create_chat_router(
     verifier: IncomingRequestVerifier,
     *,
     path: str = "/",
+    addon_action_url: str | None = None,
 ) -> APIRouter:
     """Build a POST route wiring Google Chat interactions into the dispatcher.
 
     Works under FastAPI via app.include_router(...) and under plain Starlette
     via Starlette(routes=chat_router.routes).
+
+    The route accepts both payload families (Chat API interaction events
+    and Google Workspace add-on event objects) and answers each in its
+    own family. For an HTTP add-on pass ``addon_action_url`` — the public
+    HTTPS URL of this route — so card actions in responses call it back.
     """
+    if addon_action_url is not None and not addon_action_url.startswith("https://"):
+        raise ValueError(
+            "addon_action_url must be the public HTTPS URL of this route; "
+            f"got {addon_action_url!r}"
+        )
     adapter = HTTPInteractionAdapter()
     router = APIRouter()
 
@@ -361,7 +271,7 @@ def create_chat_router(
             response.payload if response.state is ResponseState.RESPONDED else result
         )
         try:
-            return _serialize(payload, event=event)
+            return _serialize(payload, event=event, addon_action_url=addon_action_url)
         except TypeError as error:
             logger.error(
                 "response serialization failed: event_type=%s error=%s",

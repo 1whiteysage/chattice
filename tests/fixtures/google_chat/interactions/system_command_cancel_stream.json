@@ -1,0 +1,14 @@
+{
+  "type": "SYSTEM_COMMAND",
+  "space": {
+    "name": "spaces/SPACE_ID"
+  },
+  "user": {
+    "name": "users/USER_ID"
+  },
+  "systemCommandMetadata": {
+    "cancelStream": {
+      "streamMessage": "spaces/SPACE_ID/streamMessages/STREAM_ID"
+    }
+  }
+}

@@ -29,6 +29,7 @@ from chattice.events import (
     FormSubmitEvent,
     MessageEvent,
     RemovedFromSpaceEvent,
+    SystemCommandEvent,
     UnknownEvent,
     WidgetUpdatedEvent,
 )
@@ -149,7 +150,12 @@ class Dispatcher(Router):
         self._fsm_storage = fsm_storage
         self._fsm_strategy = fsm_strategy
         self._observability_hooks = observability_hooks
+        # One enrollment for both directions: the Dispatcher's own
+        # features plus those of the Bot it was constructed with.
         self._preview_capabilities = PreviewCapabilities(preview_features)
+        bot_preview = getattr(bot, "preview_capabilities", None)
+        if isinstance(bot_preview, PreviewCapabilities):
+            self._preview_capabilities = self._preview_capabilities | bot_preview
         self._strict_interactions = strict_interactions
         self._runtime_diagnostics = runtime_diagnostics or RuntimeDiagnostics()
 
@@ -418,6 +424,11 @@ class Dispatcher(Router):
             return ("added_to_space",)
         if isinstance(event, RemovedFromSpaceEvent):
             return ("removed_from_space",)
+        if isinstance(event, SystemCommandEvent):
+            # Developer Preview: typed routing only after explicit opt-in.
+            if PreviewFeature.MESSAGE_STREAMING not in self._preview_capabilities:
+                return ()
+            return ("system_command",)
         if isinstance(event, WidgetUpdatedEvent):
             return ("widget_updated",)
         if isinstance(event, AppHomeEvent):

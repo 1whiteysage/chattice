@@ -1,6 +1,8 @@
 """Incoming request verification per the official Chat documentation.
 
-Two audience strategies (documented Google modes):
+Chat apps built as Google Workspace add-ons use ``AddOnTokenVerifier``.
+For Chat API interaction events ``GoogleTokenVerifier`` supports two
+audience strategies (documented Google modes):
 
 - ENDPOINT-URL audience (audience starts with https://): Google sends a
   Google-signed OIDC ID token. Verified with
@@ -136,6 +138,56 @@ class GoogleTokenVerifier:
             raise VerificationError("Invalid bearer token") from error
 
 
+class AddOnTokenVerifier:
+    """Verify requests sent to a Chat app built as a Workspace add-on.
+
+    Google signs add-on requests with an OIDC ID token of the add-on's
+    own service account, not the Google Chat service account:
+    https://developers.google.com/workspace/add-ons/guides/alternate-runtimes
+
+    ``audience`` is the HTTPS endpoint URL configured for the add-on.
+    ``service_account_email`` is shown in the Google Cloud console under
+    Google Workspace Marketplace SDK > HTTP Deployments (or in the Chat
+    API configuration). Fail-closed like ``GoogleTokenVerifier``.
+    """
+
+    def __init__(
+        self,
+        *,
+        audience: str,
+        service_account_email: str,
+        request: google_requests.Request | None = None,
+    ) -> None:
+        if not audience.startswith("https://"):
+            raise ValueError(
+                f"audience must be the add-on's HTTPS endpoint URL; got {audience!r}"
+            )
+        if not service_account_email or "@" not in service_account_email:
+            raise ValueError(
+                "service_account_email must be the add-on's service "
+                "account email address"
+            )
+        self._audience = audience
+        self._service_account_email = service_account_email
+        self._request = request if request is not None else google_requests.Request()
+
+    def verify(self, request: IncomingRequest) -> None:
+        token = extract_bearer(request)
+        try:
+            # Never pass certs_url here (see GoogleTokenVerifier.verify).
+            claims = verify_oauth2_token(  # type: ignore[no-untyped-call]
+                token, self._request, audience=self._audience
+            )
+        except google_auth_exceptions.TransportError as error:
+            raise VerificationError("Cannot reach Google certificates") from error
+        except (ValueError, google_auth_exceptions.GoogleAuthError) as error:
+            raise VerificationError("Invalid bearer token") from error
+        if claims.get("email") != self._service_account_email:
+            raise VerificationError("Token identity is not the add-on service account")
+        if claims.get("email_verified") is not True:
+            raise VerificationError("Token email is not verified")
+
+
 class MockVerifier:
     """Accepts (or rejects) any request; for tests and local development only."""
 
@@ -148,6 +200,7 @@ class MockVerifier:
 
 
 __all__ = [
+    "AddOnTokenVerifier",
     "GoogleTokenVerifier",
     "IncomingRequestVerifier",
     "MockVerifier",

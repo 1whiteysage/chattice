@@ -5,6 +5,11 @@ Network tests require:
     CHATTICE_GOOGLE_SPACE=spaces/AAA
     pytest tests/integration/live -m google_live
 
+Developer Preview tests additionally require a project enrolled in the
+Google Workspace Developer Preview Program:
+    CHATTICE_GOOGLE_PREVIEW=1
+    CHATTICE_GOOGLE_DM_SPACE=spaces/BBB   (a 1:1 DM with the app, for sessions)
+
 Contract tests (card round-trip, command payloads, Workspace Pub/Sub
 replay) execute in the same run and do NOT need network access. Every
 test in this suite EXECUTES when run — none raise NotImplementedError.
@@ -23,6 +28,7 @@ import pytest
 from chattice import Dispatcher, Router
 from chattice.adapters.google_chat import parse_interaction
 from chattice.auth import ServiceAccountCredentialsProvider
+from chattice.capabilities import PreviewFeature
 from chattice.cards import (
     Button,
     ButtonList,
@@ -33,12 +39,16 @@ from chattice.cards import (
 )
 from chattice.client import Bot
 from chattice.events import ActionEvent, CommandEvent
+from chattice.experimental.sessions import ThreadSessions
+from chattice.experimental.streaming import MessageStreams, step, text
 from chattice.workspace_events import parse_workspace_envelope
 
 pytestmark = pytest.mark.google_live
 
 _CREDENTIALS_ENV = "CHATTICE_GOOGLE_CREDENTIALS"
 _SPACE_ENV = "CHATTICE_GOOGLE_SPACE"
+_PREVIEW_ENV = "CHATTICE_GOOGLE_PREVIEW"
+_DM_SPACE_ENV = "CHATTICE_GOOGLE_DM_SPACE"
 
 
 def _require_network_env() -> tuple[str, str]:
@@ -46,6 +56,16 @@ def _require_network_env() -> tuple[str, str]:
     space = os.environ.get(_SPACE_ENV)
     if not path or not space:
         pytest.skip(f"set {_CREDENTIALS_ENV} and {_SPACE_ENV} for live calls")
+    return path, space
+
+
+def _require_preview_env() -> tuple[str, str]:
+    path, space = _require_network_env()
+    if os.environ.get(_PREVIEW_ENV) != "1":
+        pytest.skip(
+            f"set {_PREVIEW_ENV}=1 for Developer Preview calls (the project "
+            "must be enrolled in the Developer Preview Program)"
+        )
     return path, space
 
 
@@ -77,6 +97,98 @@ async def test_echo_round_trip_via_bot() -> None:
         created = await bot.app.messages.create(space, text="echo-ping")
         fetched = await bot.app.messages.get(created.name)
         assert fetched.name == created.name
+
+
+async def test_replace_cards_on_an_app_message() -> None:
+    path, space = _require_network_env()
+    provider = ServiceAccountCredentialsProvider.from_service_account_file(path)
+    card = Card(
+        header=CardHeader(title="chattice live smoke"),
+        sections=[Section(widgets=[TextParagraph("first")])],
+    )
+    async with Bot(credentials_provider=provider) as bot:
+        created = await bot.app.messages.create(space, card=card)
+        try:
+            await bot.app.messages.replace_cards(
+                created.name,
+                [Card(sections=[Section(widgets=[TextParagraph("second")])])],
+            )
+            fetched = await bot.app.messages.get(created.name)
+            assert len(fetched.cards_v2) == 1
+        finally:
+            await bot.app.messages.delete(created.name)
+
+
+# --- Developer Preview network tests (skip without enrollment) ---
+#
+# These are the only checks of chattice.experimental against Google: the
+# preview methods are in neither the SDK nor the public discovery
+# document, so nothing else can detect drift.
+
+
+async def test_stream_message_commit_round_trip() -> None:
+    path, space = _require_preview_env()
+    provider = ServiceAccountCredentialsProvider.from_service_account_file(path)
+    async with Bot(
+        credentials_provider=provider,
+        preview_features={PreviewFeature.MESSAGE_STREAMING},
+    ) as bot:
+        anchor = await bot.app.messages.create(space, text="chattice stream anchor")
+        committed_name: str | None = None
+        try:
+            stream = await MessageStreams(bot).start(
+                anchor.name, progress_text="Thinking"
+            )
+            assert stream.name.startswith(f"{space}/streamMessages/")
+            await stream.append(step("Looking up"), progress_text="Writing")
+            await stream.append(text("chattice "))
+            await stream.replace(text("chattice live stream"))
+            committed = await stream.commit()
+            assert not stream.active
+            name = committed.get("name")
+            assert isinstance(name, str) and name.startswith(f"{space}/messages/")
+            committed_name = name
+        finally:
+            if committed_name is not None:
+                await bot.app.messages.delete(committed_name)
+            await bot.app.messages.delete(anchor.name)
+
+
+async def test_stream_message_discard_leaves_no_message() -> None:
+    path, space = _require_preview_env()
+    provider = ServiceAccountCredentialsProvider.from_service_account_file(path)
+    async with Bot(
+        credentials_provider=provider,
+        preview_features={PreviewFeature.MESSAGE_STREAMING},
+    ) as bot:
+        anchor = await bot.app.messages.create(space, text="chattice stream anchor")
+        try:
+            stream = await MessageStreams(bot).start(
+                anchor.name, progress_text="Thinking"
+            )
+            await stream.discard()
+            assert not stream.active
+        finally:
+            await bot.app.messages.delete(anchor.name)
+
+
+async def test_thread_sessions_list_in_an_app_dm() -> None:
+    path, _ = _require_preview_env()
+    dm_space = os.environ.get(_DM_SPACE_ENV)
+    if not dm_space:
+        pytest.skip(f"set {_DM_SPACE_ENV} to a 1:1 DM space with the app")
+    provider = ServiceAccountCredentialsProvider.from_service_account_file(path)
+    async with Bot(
+        credentials_provider=provider,
+        preview_features={PreviewFeature.THREAD_SESSIONS},
+    ) as bot:
+        sessions = ThreadSessions(bot)
+        seen = 0
+        async for session in await sessions.list(dm_space, page_size=5):
+            assert session.name.startswith(f"{dm_space}/threads/")
+            seen += 1
+            if seen == 5:
+                break
 
 
 # --- contract tests (no network; execute in the live run) ---

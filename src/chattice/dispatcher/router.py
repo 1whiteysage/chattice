@@ -29,6 +29,7 @@ class Router:
         self.message_action = EventObserver("message_action")
         self.added_to_space = EventObserver("added_to_space")
         self.removed_from_space = EventObserver("removed_from_space")
+        self.system_command = EventObserver("system_command")
         self.widget_updated = EventObserver("widget_updated")
         self.app_home = EventObserver("app_home")
         self.form_submit = EventObserver("form_submit")

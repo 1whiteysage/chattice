@@ -145,17 +145,16 @@ async def test_notify_valid_values_serialized(notify: str) -> None:
     assert options.notification_type.name == expected
 
 
-async def test_user_auth_card_rejected_without_preview_opt_in() -> None:
+async def test_user_auth_card_allowed() -> None:
+    """Cards created with user authentication are generally available."""
     transport = FakeChatTransport()
-    with pytest.raises(CapabilityNotSupported):
-        await _bot(transport, auth_mode=AuthMode.USER).app.messages.create(
-            "spaces/AAA", card=_card()
-        )
-    assert transport.requests == []
+    await _bot(transport, auth_mode=AuthMode.USER).app.messages.create(
+        "spaces/AAA", card=_card()
+    )
+    assert len(transport.requests[-1].message.cards_v2) == 1
 
 
 async def test_user_auth_text_allowed() -> None:
-    """Only CARDS are Developer Preview under user auth; text stays valid."""
     transport = FakeChatTransport()
     await _bot(transport, auth_mode=AuthMode.USER).app.messages.create(
         "spaces/AAA", text="plain"

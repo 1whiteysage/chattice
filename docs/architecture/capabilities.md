@@ -86,10 +86,9 @@ receive a server-side 403, surfaced as `ChatPermissionDeniedError`.
 
 Beyond the registry, `Bot` enforces deterministic surface rules before
 transport: `private_to` requires APP auth and rejects
-accessory-widget combinations, `notify` is strict-validated and
-APP-gated, and user-auth CARDS are rejected without the documented
-stable facade. A Dispatcher preview flag does not authorize USER card sends;
-use `await bot.raw.user()` for a separately supported Google preview flow.
+accessory-widget combinations, and `notify` is strict-validated and
+APP-gated. Cards may be sent with either identity; with the USER identity
+Google requires the Chat app to be a member of the space.
 
 ## require() guards
 
@@ -134,9 +133,25 @@ supported ones do.
 
 ## Developer Preview enrollment
 
-Preview capability enrollment is explicit configuration. Message actions are
-now generally available and do not require enrollment; the legacy
-`PreviewFeature.MESSAGE_ACTION` value remains accepted for compatibility.
+Preview capability enrollment is explicit configuration. Message actions,
+card replacement, user-authenticated cards, message pins, and customer-level
+event subscriptions are generally available and do not require enrollment;
+their `PreviewFeature` values remain accepted for compatibility.
+
+Current Developer Preview surfaces:
+
+| `PreviewFeature` | Gates |
+| --- | --- |
+| `MESSAGE_STREAMING` | `chattice.experimental.streaming` and typed routing of `SYSTEM_COMMAND` to `router.system_command` |
+| `THREAD_SESSIONS` | `chattice.experimental.sessions` |
+| `RELEVANCE_SEARCH_ORDERING` | `messages.search(order_by="relevance desc")` |
+
+There is one enrollment, `PreviewCapabilities`, configured on the Bot:
+`Bot(preview_features={...})` names features, `Bot(enable_preview=True)`
+enrolls in all of `DEVELOPER_PREVIEW_FEATURES`. Each gate checks its own
+feature and names it in the error. `Dispatcher(bot=bot)` routes preview events
+by the same enrollment; `Dispatcher(preview_features={...})` adds to it and
+serves a Dispatcher that has no Bot.
 
 Handlers may inject `PreviewCapabilities` to inspect the immutable enrollment.
 A caller cannot bypass configuration by passing a replacement value to

@@ -1,10 +1,16 @@
 # ruff: noqa: ASYNC109 — timeout kwarg mirrors the real Bot (gapic call convention)
-"""MockBot: a call-recording stand-in for the outgoing API."""
+"""MockBot: a call-recording stand-in for the outgoing API.
+
+MockBot mirrors a fixed part of the real client: ``messages.create`` /
+``update`` / ``replace_cards`` / ``get`` / ``delete`` and ``spaces.get``.
+Everything else raises ``AttributeError`` naming the missing resource;
+:func:`chattice.testing.fake_bot` covers the whole client surface.
+"""
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any, NoReturn
 
 from google.apps.chat_v1.types.message import Message
 from google.apps.chat_v1.types.space import Space
@@ -14,11 +20,40 @@ from chattice.media import AttachmentRef, AttachmentSource, UploadedAttachment
 __all__ = ["MockBot"]
 
 
-class _MockMessages:
-    """Message resource facade over the recording methods."""
+class _MockFacade:
+    """One level of the mirrored facade (``bot.app``, ``bot.app.messages``).
 
-    def __init__(self, bot: MockBot) -> None:
+    Anything the mirror does not model fails loudly instead of looking
+    like a typo: the error names the missing resource or method and the
+    double that does model it.
+    """
+
+    def __init__(self, bot: MockBot, path: str) -> None:
         self._bot = bot
+        self._path = path
+
+    if not TYPE_CHECKING:
+        # Runtime only: type checkers keep reporting unknown attributes.
+        def __getattr__(self, name: str) -> NoReturn:
+            if name.startswith("_"):
+                raise AttributeError(
+                    f"{type(self).__name__!r} object has no attribute {name!r}"
+                )
+            raise AttributeError(
+                f"MockBot does not model '{self._path}.{name}': it mirrors only "
+                "messages.create/update/replace_cards/get/delete and "
+                "spaces.get. Use chattice.testing.fake_bot() for a real Bot "
+                "on FakeChatTransport, which covers the whole client."
+            )
+
+
+class _MockMessages(_MockFacade):
+    """Message resource facade over the recording methods.
+
+    ``config`` (per-call timeout, retry, metadata) is accepted and stops
+    here: like ``timeout`` it is never recorded, and the recorders keep
+    their signatures so subclasses that override them stay valid.
+    """
 
     async def create(
         self,
@@ -36,6 +71,8 @@ class _MockMessages:
         notify: Any = None,
         private_to: Any = None,
         attachments: Any = None,
+        citations: Any = None,
+        cited_sources: Any = None,
     ) -> Message:
         return await self._bot.send_message(
             space,
@@ -51,6 +88,16 @@ class _MockMessages:
             notify=notify,
             private_to=private_to,
             attachments=attachments,
+            # Passed only when set: subclasses that override
+            # send_message() without these keywords keep working.
+            **{
+                key: value
+                for key, value in (
+                    ("citations", citations),
+                    ("cited_sources", cited_sources),
+                )
+                if value
+            },
         )
 
     async def update(
@@ -59,43 +106,75 @@ class _MockMessages:
         text: str | None = None,
         *,
         card: Any = None,
+        markup_syntax: Any = None,
         timeout: float | None = None,
+        config: Any = None,
     ) -> Message:
-        return await self._bot.update_message(name, text, card=card, timeout=timeout)
+        message = await self._bot.update_message(name, text, card=card, timeout=timeout)
+        if markup_syntax is not None:
+            # Recorded here, not in update_message(): subclasses that
+            # override the recording method keep their signature.
+            message.markup_syntax = markup_syntax
+            if self._bot.calls and self._bot.calls[-1][0] == "update_message":
+                self._bot.calls[-1][1]["markup_syntax"] = markup_syntax
+        return message
 
-    async def get(self, name: str, *, timeout: float | None = None) -> Message:
+    async def replace_cards(
+        self,
+        name: str,
+        cards: Any,
+        *,
+        timeout: float | None = None,
+        config: Any = None,
+    ) -> None:
+        return await self._bot.replace_cards(name, cards, timeout=timeout)
+
+    async def get(
+        self, name: str, *, timeout: float | None = None, config: Any = None
+    ) -> Message:
         return await self._bot.get_message(name, timeout=timeout)
 
-    async def delete(self, name: str, *, timeout: float | None = None) -> None:
+    async def delete(
+        self, name: str, *, timeout: float | None = None, config: Any = None
+    ) -> None:
         return await self._bot.delete_message(name, timeout=timeout)
 
 
-class _MockSpaces:
-    """Space resource facade over the recording methods."""
+class _MockSpaces(_MockFacade):
+    """Space resource facade over the recording methods.
 
-    def __init__(self, bot: MockBot) -> None:
-        self._bot = bot
+    ``config`` is accepted and stops here, as on the message facade.
+    """
 
-    async def get(self, name: str, *, timeout: float | None = None) -> Space:
-        return await self._bot.get_space(name, timeout=timeout)
+    async def get(
+        self,
+        name: str,
+        *,
+        admin_access: bool = False,
+        timeout: float | None = None,
+        config: Any = None,
+    ) -> Space:
+        space = await self._bot.get_space(name, timeout=timeout)
+        if admin_access and self._bot.calls and self._bot.calls[-1][0] == "get_space":
+            # Recorded here, not in get_space(): subclasses that override
+            # the recording method keep their signature.
+            self._bot.calls[-1][1]["admin_access"] = True
+        return space
 
 
-class _MockIdentity:
+class _MockIdentity(_MockFacade):
     """Identity namespace mirroring ``Bot.app`` / ``Bot.user``.
 
     MockBot does not model auth: both namespaces expose the same recorder.
     """
 
-    def __init__(self, bot: MockBot) -> None:
-        self._bot = bot
-
     @property
     def messages(self) -> _MockMessages:
-        return _MockMessages(self._bot)
+        return _MockMessages(self._bot, f"{self._path}.messages")
 
     @property
     def spaces(self) -> _MockSpaces:
-        return _MockSpaces(self._bot)
+        return _MockSpaces(self._bot, f"{self._path}.spaces")
 
 
 class MockBot:
@@ -106,6 +185,13 @@ class MockBot:
     receive it by name (``feed_update(event, bot=mock_bot)``)). Recorded
     call kinds are the recording layer's names (``send_message``,
     ``update_message``); subclasses may override those recorders.
+
+    Only ``messages.create`` / ``update`` / ``replace_cards`` / ``get`` /
+    ``delete`` and ``spaces.get`` are mirrored, and nothing is validated:
+    no identity preflight, no local checks, no preview gating. Any other
+    resource or method raises ``AttributeError``; use
+    :func:`chattice.testing.fake_bot` for those and for behaviour that
+    depends on the real client.
     """
 
     def __init__(self) -> None:
@@ -113,11 +199,11 @@ class MockBot:
 
     @property
     def app(self) -> _MockIdentity:
-        return _MockIdentity(self)
+        return _MockIdentity(self, "bot.app")
 
     @property
     def user(self) -> _MockIdentity:
-        return _MockIdentity(self)
+        return _MockIdentity(self, "bot.user")
 
     async def send_message(
         self,
@@ -135,6 +221,8 @@ class MockBot:
         notify: Any = None,
         private_to: Any = None,
         attachments: Any = None,
+        citations: Any = None,
+        cited_sources: Any = None,
     ) -> Message:
         parent = space if isinstance(space, str) else space.name
         self.calls.append(
@@ -159,6 +247,10 @@ class MockBot:
         if markup_syntax is not None:
             self.calls[-1][1]["markup_syntax"] = markup_syntax
             message.markup_syntax = markup_syntax
+        if citations:
+            self.calls[-1][1]["citations"] = list(citations)
+        if cited_sources:
+            self.calls[-1][1]["cited_sources"] = list(cited_sources)
         return message
 
     async def upload_attachment(
@@ -234,6 +326,16 @@ class MockBot:
             )
         )
         return Message(name=name, text=text or "")
+
+    async def replace_cards(
+        self, name: str, cards: Any, *, timeout: float | None = None
+    ) -> None:
+        self.calls.append(
+            (
+                "replace_cards",
+                {"name": name, "cards": [card.to_dict() for card in cards]},
+            )
+        )
 
     async def delete_message(self, name: str, *, timeout: float | None = None) -> None:
         self.calls.append(("delete_message", {"name": name}))

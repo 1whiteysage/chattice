@@ -106,17 +106,31 @@ code exchange, stores the resulting credentials, and returns them through a
 
 ## Preview opt-in
 
+One enrollment covers both directions: outbound preview calls on the Bot and
+typed routing of preview events in the Dispatcher that owns it.
+
 ```python
 from chattice import Dispatcher
 from chattice.capabilities import PreviewFeature
+from chattice.client import Bot
 
-dispatcher = Dispatcher(
+bot = Bot(
+    credentials=credentials,
     preview_features={
-        PreviewFeature.REPLACE_CARDS,
-        PreviewFeature.PINNED_MESSAGES,
-    }
+        PreviewFeature.MESSAGE_STREAMING,
+        PreviewFeature.THREAD_SESSIONS,
+    },
 )
+dispatcher = Dispatcher(bot=bot)
 ```
+
+`Bot(enable_preview=True)` enrolls in every feature that is in Developer
+Preview. A Dispatcher without a Bot takes the same set directly:
+`Dispatcher(preview_features={...})`.
+
+`MESSAGE_ACTION`, `REPLACE_CARDS`, `USER_AUTH_CARDS`, `PINNED_MESSAGES`, and
+`CUSTOMER_LEVEL_SUBSCRIPTIONS` are generally available at Google and need no
+enrollment; the enum values remain accepted for compatibility.
 
 Enrollment in Chattice is only an explicit application decision. The Google
 account must separately be eligible/enrolled and have the required identity,

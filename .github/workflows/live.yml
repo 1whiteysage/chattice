@@ -1,0 +1,62 @@
+name: Live Google smoke
+
+# Calls the real Google Chat API with the credentials of the `google-live`
+# environment. Manual only: it never runs on push or pull_request, so forks
+# and untrusted branches cannot reach the secret.
+
+on:
+  workflow_dispatch:
+    inputs:
+      preview:
+        description: "Also run Developer Preview tests (streaming, sessions)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    environment: google-live
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --all-groups --locked
+      - name: Run live tests
+        env:
+          CREDENTIALS_JSON: ${{ secrets.CHATTICE_GOOGLE_CREDENTIALS_JSON }}
+          CHATTICE_GOOGLE_SPACE: ${{ vars.CHATTICE_GOOGLE_SPACE }}
+          CHATTICE_GOOGLE_DM_SPACE: ${{ vars.CHATTICE_GOOGLE_DM_SPACE }}
+          CHATTICE_GOOGLE_PREVIEW: ${{ inputs.preview && '1' || '' }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CREDENTIALS_JSON}" ] || [ -z "${CHATTICE_GOOGLE_SPACE}" ]; then
+            echo "::error::Configure the google-live environment (see tests/integration/live/README.md)."
+            exit 1
+          fi
+          key_file="$(mktemp "${RUNNER_TEMP}/chattice-key.XXXXXX")"
+          trap 'rm -f "${key_file}"' EXIT
+          printf '%s' "${CREDENTIALS_JSON}" > "${key_file}"
+          export CHATTICE_GOOGLE_CREDENTIALS="${key_file}"
+          uv run pytest tests/integration/live -m google_live -rs \
+            --junitxml="${RUNNER_TEMP}/live.xml"
+          # A run that skipped the network tests proves nothing: fail it.
+          uv run python - "${RUNNER_TEMP}/live.xml" <<'PY'
+          import os
+          import sys
+          import xml.etree.ElementTree as ET
+
+          suite = ET.parse(sys.argv[1]).getroot()
+          suite = suite if suite.tag == "testsuite" else suite[0]
+          skipped = int(suite.get("skipped", "0"))
+          # Without preview: 3 streaming/session tests skip. With preview:
+          # at most the sessions test, when no DM space is configured.
+          allowed = 1 if os.environ.get("CHATTICE_GOOGLE_PREVIEW") == "1" else 3
+          if skipped > allowed:
+              sys.exit(f"{skipped} live tests skipped; at most {allowed} expected")
+          print(f"live run OK: {suite.get('tests')} tests, {skipped} skipped")
+          PY

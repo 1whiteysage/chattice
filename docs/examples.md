@@ -4,7 +4,7 @@ The flat examples are applications that use the operator's credentials.
 `examples/docs/from_zero.py` is a separate credential-free tour using MockBot.
 CI imports the applications and exercises their startup, handlers, and shutdown
 with test substitutes; it does not contact Google. The examples use public
-Chattice 0.3.5 entry points.
+Chattice 0.4.0 entry points.
 
 | Task | Example |
 | --- | --- |
