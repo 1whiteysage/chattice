@@ -3,7 +3,7 @@
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
   "name": "chattice-0.4.0-sbom",
-  "documentNamespace": "https://spdx.org/spdxdocs/chattice-0.4.0-bfc722bd-89b9-575c-b9b4-36cb6d6c1e17",
+  "documentNamespace": "https://spdx.org/spdxdocs/chattice-0.4.0-43300989-60cd-5137-b410-69060d577eed",
   "creationInfo": {
     "created": "1970-01-01T00:00:00Z",
     "creators": [
@@ -254,7 +254,7 @@
     {
       "SPDXID": "SPDXRef-Package-google-api-python-client",
       "name": "google-api-python-client",
-      "versionInfo": "2.199.0",
+      "versionInfo": "2.201.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -324,7 +324,7 @@
     {
       "SPDXID": "SPDXRef-Package-google-cloud-storage",
       "name": "google-cloud-storage",
-      "versionInfo": "3.13.1",
+      "versionInfo": "3.17.1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
