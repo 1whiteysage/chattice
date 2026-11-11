@@ -43,6 +43,6 @@ stable core.
 python -c "import chattice; print(chattice.__version__)"
 ```
 
-The output for this documentation line is `0.3.5`.
+The output for this documentation line is `0.4.0`.
 
 Next: [5-minute Quickstart](quickstart.md).

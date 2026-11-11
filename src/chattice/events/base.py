@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from .common import DialogMetadata, TimeZone
+from .common import DialogMetadata, TimeZone, WireFormat
 from .references import SpaceRef, ThreadRef, UserRef
 
 
@@ -22,3 +22,6 @@ class Event:
     dialog: DialogMetadata | None = None
     locale: str | None = None
     timezone: TimeZone | None = None
+    # The payload family the interaction arrived in; the synchronous
+    # response is serialized in the same family.
+    wire_format: WireFormat = WireFormat.CHAT_API

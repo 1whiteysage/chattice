@@ -20,6 +20,7 @@ from chattice.events import (
     FormSubmitEvent,
     MessageEvent,
     RemovedFromSpaceEvent,
+    SystemCommandEvent,
     UnknownEvent,
     WidgetUpdatedEvent,
 )
@@ -124,6 +125,8 @@ def _event_aliases(event: Event) -> frozenset[str]:
         aliases.add("added_to_space")
     elif isinstance(event, RemovedFromSpaceEvent):
         aliases.add("removed_from_space")
+    elif isinstance(event, SystemCommandEvent):
+        aliases.add("system_command")
     elif isinstance(event, WidgetUpdatedEvent):
         aliases.add("widget")
     elif isinstance(event, AppHomeEvent):
@@ -193,6 +196,7 @@ def build_handler_plan(callback: HandlerCallback) -> HandlerPlan:
                 "command",
                 "added_to_space",
                 "removed_from_space",
+                "system_command",
                 "widget",
                 "app_home",
                 "form",

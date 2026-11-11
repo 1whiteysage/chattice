@@ -22,13 +22,24 @@ from chattice.capabilities import (
     ExecutionVariant,
     Operation,
     OperationRegistry,
+    PreviewCapabilities,
+    PreviewFeature,
 )
 from chattice.events import SpaceRef, UserRef
 
 from ._names import _canonical_space, _canonical_user
 from .errors import ChatAPIError
 from .executor import OperationExecutor
-from .resources import Attachments, Memberships, Messages, Reactions, Spaces, Users
+from .resources import (
+    Attachments,
+    CustomEmojis,
+    Memberships,
+    MessagePins,
+    Messages,
+    Reactions,
+    Spaces,
+    Users,
+)
 
 _GRPC_ASYNCIO = "grpc_asyncio"
 
@@ -164,6 +175,16 @@ class IdentityNamespace:
         return Reactions(self._bot, self._identity)
 
     @property
+    def custom_emojis(self) -> CustomEmojis:
+        """Custom emoji operations executed with THIS identity (USER-only)."""
+        return CustomEmojis(self._bot, self._identity)
+
+    @property
+    def message_pins(self) -> MessagePins:
+        """Message pin operations executed with THIS identity (USER-only)."""
+        return MessagePins(self._bot, self._identity)
+
+    @property
     def users(self) -> Users:
         """Per-user state operations (USER-only)."""
         return Users(self._bot, self._identity)
@@ -192,6 +213,8 @@ class Bot:
         auth_mode: AuthMode | None = None,
         transport: ChatServiceTransport | None = None,
         enable_preview: bool = False,
+        preview_features: Iterable[PreviewFeature] | None = None,
+        addon_action_url: str | None = None,
     ) -> None:
         has_dual_providers = (
             app_credentials_provider is not None
@@ -218,7 +241,23 @@ class Bot:
         # Preview gating: registry is the source of truth for WHICH
         # operations are preview; this flag is the user's explicit
         # opt-in (per Bot instance).
-        self._preview_enabled = enable_preview
+        # ``enable_preview=True`` enrolls in every Developer Preview
+        # feature; ``preview_features`` enrolls in the named ones. A
+        # Dispatcher constructed with this Bot routes preview events by
+        # the same enrollment.
+        self._preview = PreviewCapabilities(preview_features or ())
+        if enable_preview:
+            self._preview = self._preview | PreviewCapabilities.all()
+        # A Chat app built as an HTTP Google Workspace add-on addresses
+        # card actions by endpoint URL (chattice.cards.addon). When set,
+        # cards and accessory widgets sent through this Bot are bound to
+        # that endpoint.
+        if addon_action_url is not None and not addon_action_url.startswith("https://"):
+            raise ValueError(
+                "addon_action_url must be the HTTPS endpoint that receives "
+                f"card interactions; got {addon_action_url!r}"
+            )
+        self._addon_action_url = addon_action_url
         if asset_publisher is not None and not callable(
             getattr(asset_publisher, "publish", None)
         ):
@@ -573,6 +612,16 @@ class Bot:
             )
         self._resolved_user_set = True
         return self._resolved_user_credentials
+
+    @property
+    def preview_capabilities(self) -> PreviewCapabilities:
+        """The Developer Preview features this Bot is enrolled in."""
+        return self._preview
+
+    @property
+    def _preview_enabled(self) -> bool:
+        """Whether any Developer Preview feature is enrolled."""
+        return bool(self._preview)
 
     async def _preflight_operation(
         self,

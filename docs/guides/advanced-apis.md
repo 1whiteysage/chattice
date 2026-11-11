@@ -30,25 +30,66 @@ stable facade.
 | Family | Chattice high-level status | Identity/status note |
 | --- | --- | --- |
 | Message create/get/update/delete | stable `bot.app.messages` / `bot.user.messages` | explicit identity; app/user support varies by scope |
+| Card replacement | stable `bot.app.messages.replace_cards` | APP only; the app must be a space member and own the cards |
 | Space get | stable `bot.app.spaces.get` | app must normally have access/membership |
 | Space list | stable `bot.app.spaces.list` | APP + `chat.bot`; caller-member Spaces, not organization-wide search |
-| Space create/search/update/delete | raw official client | app, user, admin, or importer rules differ by method |
-| Human user memberships | stable `bot.app.memberships` (create/get/list/delete) | APP only; create/delete require admin-approved `chat.app.memberships` |
+| Space create/update/delete | stable `bot.app.spaces` / `bot.user.spaces` | APP needs administrator approval; `admin_access=True` on the USER identity; import mode stays raw |
+| Space search, group chat lookup | stable `bot.user.spaces.search` / `.find_group_chats` | USER only; `admin_access=True` searches the organization |
+| Human user memberships | stable `bot.app.memberships` (create/get/list/delete) | APP, or USER with `admin_access=True`; APP create/delete require admin-approved `chat.app.memberships` |
+| Membership role | stable `memberships.update` on either identity | APP only in spaces the app created, with administrator approval |
 | Group, external-user, or Chat-app memberships | raw official client where Google supports the case | auth and role constraints vary |
 | Message get/list/delete | curated `bot.app.messages` / `bot.user.messages` | explicit identity; list returns a `Pager` |
-| Message search | raw official client | user/admin/app results and scopes differ |
+| Message search | stable `bot.user.messages.search` | USER only; relevance ordering is a Developer Preview |
 | Reactions | curated `bot.user.reactions` (create/list/delete) | USER only; reaction-specific scopes |
 | Attachments | curated `bot.app.attachments` / `bot.user.attachments` + lossless `MessageEvent.attachments` | upload is USER-only; metadata get is APP-only; download accepts either |
-| Pins | raw/Preview | Google Developer Preview; explicit account eligibility and scopes |
+| Pins | stable `bot.user.message_pins` (create/list/delete) | USER only; `chat.spaces.pins*` or `chat.spaces*` |
+| Stream messages, thread sessions | `chattice.experimental` | Developer Preview; APP only; see below |
 | Read state / thread read state / notification settings | curated `bot.user.users.*` | USER only; `chat.users.readstate*` / `chat.users.spacesettings` |
-| Availability, user sections | raw official client | generally user-specific; consult each method's auth table |
-| Custom emoji | raw official client | custom-emoji scopes and organizational policy apply |
+| Availability | curated `bot.user.users.availability` | USER only; the caller's own presence and custom status |
+| Sidebar sections | curated `bot.user.users.sections` | USER only; custom sections and their space items |
+| Custom emoji | curated `bot.user.custom_emojis` | USER only; Workspace organizations with custom emojis turned on |
 | Import mode | raw official client | admin/domain-wide setup and `chat.import` semantics apply |
 
 Never infer authorization from method presence in the SDK. Check the current
 [Google authentication matrix](https://developers.google.com/workspace/chat/authenticate-authorize),
 request the narrowest scope, and expect Google to enforce resource permission
 after local preflight.
+
+## Presence, sections, and custom emoji
+
+These act for one person, so they live on the USER identity and default to the
+caller (`users/me`):
+
+```python
+from datetime import timedelta
+
+availability = bot.user.users.availability
+await availability.set_custom_status(
+    "In a workshop", emoji="📚", ttl=timedelta(hours=2)
+)
+await availability.mark_do_not_disturb(ttl=timedelta(hours=1))
+
+sections = bot.user.users.sections
+section = await sections.create("Projects")
+found = await sections.list_items(space="spaces/AAA")
+async for item in found:
+    await sections.move_item(item.name, target_section=section.name)
+
+image = open("launch.png", "rb").read()
+await bot.user.custom_emojis.create(":team-launch:", image, filename="launch.png")
+```
+
+- Availability: Google lets a caller read and change only their own state. The
+  custom status is at most 64 characters with a Unicode emoji; `ttl` and
+  `expire_time` are mutually exclusive.
+- Sections: only custom sections can be created, renamed, or deleted, and only
+  spaces can be items. `list_items(space=...)` without a section searches all
+  sections.
+- Custom emoji: the name is `:lowercase-words:`, the image a square PNG, JPG,
+  or GIF under 256 KB. `get` and `delete` accept the `:name:` alias.
+
+Google mapping: `users.availability.*`, `users.sections.*`,
+`users.sections.items.*`, and `customEmojis.*`.
 
 ## Opening a direct chat from a card
 
@@ -139,7 +180,94 @@ await bot.app.messages.create(
 )
 ```
 
-Omitting `markup_syntax` preserves Google's default formatting. This parameter
-applies to the message body, not card widgets or synchronous interaction responses.
-Citations and footer sources remain Google Developer Preview features and are
-not exposed by this facade or the pinned SDK's Message model.
+Omitting `markup_syntax` uses the app-level default from the Chat API
+configuration page. This parameter applies to the message body, not card
+widgets or synchronous interaction responses. `messages.update` accepts it
+too. Citations and footer sources are covered in
+[Messages](messages.md#markdown-citations-and-sources).
+
+## Message streaming (Developer Preview)
+
+A stream shows a progress indicator, incremental text, and intermediate steps
+in a thread, then becomes a regular message. The official Python client has no
+streaming methods yet, so `chattice.experimental.streaming` calls the REST
+endpoints with the Bot's app credentials.
+
+```python
+from google.apps.chat_v1.types.markup_syntax import MarkupSyntax
+
+from chattice import Dispatcher, Router
+from chattice.client import Bot
+from chattice.events import MessageEvent, SystemCommandEvent
+from chattice.experimental.streaming import MessageStreams, step, text
+
+router = Router()
+bot = Bot(credentials=credentials, enable_preview=True)
+streams = MessageStreams(bot)
+
+
+@router.message()
+async def answer(message: MessageEvent) -> None:
+    stream = await streams.start(
+        message.message,
+        progress_text="Thinking...",
+        markup_syntax=MarkupSyntax.MARKUP_SYNTAX_MARKDOWN,
+    )
+    async with stream:
+        await stream.append(step("Search", "Found 3 articles."))
+        async for token in generate(message.text):
+            await stream.append(text(token))
+
+
+@router.system_command()
+async def stopped(event: SystemCommandEvent) -> None:
+    if event.cancel_stream is not None:
+        await stop_generation(event.cancel_stream)
+
+
+# The Dispatcher routes preview events by the enrollment of its Bot.
+dispatcher = Dispatcher(bot=bot)
+dispatcher.include_router(router)
+```
+
+- Leaving the `async with` block commits the stream; an exception discards
+  it. `commit()` and `discard()` can also be called directly.
+- `append` concatenates text and adds steps and citations. `replace` swaps
+  the streamed content or the progress text in place.
+- `commit` also accepts the commit-only chunks: `card(...)`,
+  `accessory_widget(...)`, `cited_source(...)`. It returns the final message
+  as REST JSON.
+- Requests on one stream must be sequential: every response carries the token
+  for the next request.
+- When the person presses Stop, Google sends `SYSTEM_COMMAND`. It reaches
+  `router.system_command` only after the `MESSAGE_STREAMING` opt-in;
+  `event.cancel_stream` is the stream's resource name. Commit the partial
+  output or discard the stream, then return nothing.
+
+Google's limits: app authentication only; the referenced message must be in a
+threaded space or a 1:1 direct message that already contains a message; an
+active stream times out 5 minutes after creation; streaming is visible only in
+Chat on the web for now.
+
+## Thread sessions (Developer Preview)
+
+With "Enable Agentic features" turned on in the Chat API configuration,
+Google organizes a 1:1 direct message with the app into separate thread-based
+sessions. `chattice.experimental.sessions` reads them and sets their title and
+icon:
+
+```python
+from chattice.experimental.sessions import ThreadSessions
+
+sessions = ThreadSessions(bot)
+await sessions.update(message.thread, title="Quarterly report", icon="bar_chart")
+async for session in await sessions.list(message.space):
+    print(session.name, session.title)
+```
+
+App authentication only, 1:1 app direct messages only. Both experimental
+modules require preview enrollment on the Bot (`enable_preview=True`, or
+`preview_features={PreviewFeature.MESSAGE_STREAMING, PreviewFeature.THREAD_SESSIONS}`)
+and a Google Cloud project enrolled in the Developer Preview Program, and can
+change before 1.0. They are checked against Google only by the live tests in
+`tests/integration/live`.

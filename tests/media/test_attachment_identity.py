@@ -215,15 +215,27 @@ async def test_attachments_with_notify_rejected(
         )
 
 
-async def test_attachments_with_card_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_attachments_with_card_use_user_create(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """User-auth cards are GA: no local rejection, Google decides."""
     _fake_upload(monkeypatch)
-    bot = _dual_bot(FakeChatTransport())
-    with pytest.raises(CapabilityNotSupported, match="User-auth card"):
-        await bot.user.messages.create(
-            "spaces/A",
-            card=Card(),
-            attachments=[InputFile.from_bytes(b"x", filename="x.png")],
-        )
+    user_transport = FakeChatTransport()
+    monkeypatch.setattr(
+        "chattice.client.bot.Bot._get_user_client_async",
+        _user_client_getter(user_transport),
+    )
+    monkeypatch.setattr(
+        "chattice.client.bot.Bot._get_client_async", _app_create_must_not_run()
+    )
+    await _dual_bot().user.messages.create(
+        "spaces/A",
+        card=Card(),
+        attachments=[InputFile.from_bytes(b"x", filename="x.png")],
+    )
+    message = user_transport.requests[-1].message
+    assert len(message.cards_v2) == 1
+    assert len(message.attachment) == 1
 
 
 async def test_attachment_thread_reply_uses_user_create(

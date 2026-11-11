@@ -111,6 +111,64 @@ can be retried. Read metadata such as `attachments`, `annotations`, `mentions`,
 
 Google mapping: `spaces.messages.create`, `get`, `update`, and `delete`.
 
+## Markdown, citations, and sources
+
+`markup_syntax` selects how Google reads the message text on `create` and
+`update`. Without it Google uses the app-level default from the Chat API
+configuration page.
+
+```python
+from google.apps.chat_v1.types.citation import Citation
+from google.apps.chat_v1.types.cited_source import CitedSource
+from google.apps.chat_v1.types.markup_syntax import MarkupSyntax
+
+guide = CitedSource(title="Architecture guide", uri="https://example.com/arch")
+
+await bot.app.messages.create(
+    "spaces/AAA",
+    text='Deploys are <chat-citation data-id="c1">blue-green</chat-citation>.',
+    markup_syntax=MarkupSyntax.MARKUP_SYNTAX_MARKDOWN,
+    citations=[Citation(id="c1", cited_sources=[guide])],
+    cited_sources=[CitedSource(title="Runbook", uri="https://example.com/runbook")],
+)
+await bot.app.messages.update(
+    "spaces/AAA/messages/M1",
+    text="**Deployment complete**",
+    markup_syntax=MarkupSyntax.MARKUP_SYNTAX_MARKDOWN,
+)
+```
+
+`citations` are inline: each one is referenced from the text with a
+`<chat-citation data-id="...">` tag and opens a hover card. `cited_sources`
+are footer links and need no tag. Both require Markdown markup and an
+outbound API call; a synchronous handler return cannot carry them. Chattice
+rejects an explicit non-Markdown syntax, a malformed citation id, and
+duplicate ids before any network call.
+
+## Pins and search
+
+Pins and message search act for a person, so they live on the USER identity:
+
+```python
+pin = await bot.user.message_pins.create("spaces/AAA/messages/M1")
+pins = await bot.user.message_pins.list("spaces/AAA")
+await bot.user.message_pins.delete("spaces/AAA/messages/M1")  # or pin.name
+
+results = await bot.user.messages.search('report sender.name="users/123"')
+async for result in results:
+    print(result.message.name)
+```
+
+`messages.search` covers every space the user can access. Google leaves out
+private messages, messages posted by Chat apps, app direct messages, and muted
+spaces; use `messages.list` when you need all messages of one space. Ordering
+by `relevance` is a Developer Preview and needs
+`Bot(preview_features={PreviewFeature.RELEVANCE_SEARCH_ORDERING})` (or
+`enable_preview=True`).
+
+Google mapping: `spaces.messagePins.create`, `list`, `delete`, and
+`spaces.messages.search`.
+
 Next: [Native commands](commands.md).
 
 ## Privacy model

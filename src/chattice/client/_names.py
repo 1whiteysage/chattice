@@ -6,7 +6,9 @@ module so neither import direction creates a package cycle.
 
 from __future__ import annotations
 
-from chattice.events import SpaceRef, UserRef
+import re
+
+from chattice.events import SpaceRef, ThreadRef, UserRef
 
 from .errors import ChatAPIError
 
@@ -59,3 +61,91 @@ def _canonical_user(user: UserRef | str, *, parameter: str = "private_to") -> st
             )
         return viewer
     return f"users/{viewer}"
+
+
+def _canonical_message(name: str, *, parameter: str = "message") -> str:
+    """Validate a canonical ``spaces/{space}/messages/{message}`` name."""
+    value = name.strip() if isinstance(name, str) else ""
+    parts = value.split("/")
+    if (
+        len(parts) != 4
+        or parts[0] != "spaces"
+        or parts[2] != "messages"
+        or not parts[1]
+        or not parts[3]
+    ):
+        raise ChatAPIError(
+            f"{parameter} must be a canonical "
+            f"'spaces/{{space}}/messages/{{message}}' resource name; got {name!r}"
+        )
+    return value
+
+
+def _canonical_message_pin(name: str) -> str:
+    """Canonicalize a message pin target.
+
+    Accepts the pin name (``spaces/{space}/messagePins/{pin}``) or the
+    pinned message name (``spaces/{space}/messages/{message}``): Google
+    documents that the pin's resource ID equals the message's resource
+    ID, so the mapping is deterministic and needs no lookup.
+    """
+    value = name.strip() if isinstance(name, str) else ""
+    parts = value.split("/")
+    if (
+        len(parts) == 4
+        and parts[0] == "spaces"
+        and parts[2] in ("messagePins", "messages")
+        and parts[1]
+        and parts[3]
+    ):
+        return f"spaces/{parts[1]}/messagePins/{parts[3]}"
+    raise ChatAPIError(
+        "message pin must be a canonical "
+        "'spaces/{space}/messagePins/{pin}' or "
+        f"'spaces/{{space}}/messages/{{message}}' resource name; got {name!r}"
+    )
+
+
+_USER_SPACE_STATE = re.compile(r"users/[^/]+/spaces/[^/]+/(?P<leaf>[A-Za-z]+)")
+_USER_THREAD_STATE = re.compile(
+    r"users/[^/]+/spaces/[^/]+/threads/[^/]+/threadReadState"
+)
+_THREAD = re.compile(r"spaces/[^/]+/threads/[^/]+")
+
+
+def _user_space_state(space: SpaceRef | str, leaf: str) -> str:
+    """Name of a per-user space resource of the calling user.
+
+    ``leaf`` is Google's singleton id (``spaceReadState`` or
+    ``spaceNotificationSetting``). A space (``spaces/{id}``, a bare id,
+    or a ``SpaceRef``) becomes ``users/me/spaces/{id}/{leaf}``; a full
+    resource name of that kind passes through.
+    """
+    if isinstance(space, str):
+        match = _USER_SPACE_STATE.fullmatch(space.strip())
+        if match is not None and match.group("leaf") == leaf:
+            return space.strip()
+        if space.strip().startswith("users/"):
+            raise ChatAPIError(
+                f"expected a space or a 'users/{{user}}/spaces/{{space}}/{leaf}' "
+                f"resource name; got {space!r}"
+            )
+    return f"users/me/{_canonical_space(space)}/{leaf}"
+
+
+def _user_thread_read_state(thread: ThreadRef | str) -> str:
+    """``users/me/spaces/{space}/threads/{thread}/threadReadState``.
+
+    Accepts a thread (``spaces/{space}/threads/{thread}`` or a
+    ``ThreadRef``) or the full read-state resource name.
+    """
+    name = thread if isinstance(thread, str) else thread.name
+    value = (name or "").strip()
+    if _USER_THREAD_STATE.fullmatch(value) is not None:
+        return value
+    if _THREAD.fullmatch(value) is None:
+        raise ChatAPIError(
+            "thread must be a canonical 'spaces/{space}/threads/{thread}' "
+            f"name or its threadReadState resource name; got {name!r}"
+        )
+    return f"users/me/{value}/threadReadState"

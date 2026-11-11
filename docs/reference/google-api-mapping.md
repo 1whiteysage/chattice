@@ -23,6 +23,24 @@ never prevents access to the official client or raw payload.
 | `chattice.cards.Image` | Cards v2 `Image` widget | HTTPS URL only | `RawWidget` |
 | `F.text.regexp(...)` | — (Python `re`, match-from-start) | n/a | custom `Filter` |
 | `messages.update` | `spaces.messages.update` | sender/identity/scope constraints | `bot.raw.app().update_message` |
+| `messages.create(citations=..., cited_sources=...)` | `Message.elements` | Markdown markup; asynchronous creation only | `bot.raw.app().create_message` |
+| `messages.replace_cards` | `spaces.messages.replaceCards` | APP only (`chat.bot`); app-owned cards | `bot.raw.app().replace_message_cards` |
+| `messages.search` | `spaces.messages.search` | USER only; parent is always `spaces/-` | `bot.raw.user().search_messages` |
+| `message_pins.create` / `list` / `delete` | `spaces.messagePins.*` | USER only (`chat.spaces.pins*`, `chat.spaces*`) | `bot.raw.user()` |
+| `spaces.search` | `spaces.search` | USER only; joined spaces, or the organization with `admin_access=True` | `bot.raw.user().search_spaces` |
+| `spaces.find_group_chats` | `spaces.findGroupChats` | USER only (`chat.memberships*`) | `bot.raw.user().find_group_chats` |
+| `spaces.create` / `update` / `delete` | `spaces.create` / `patch` / `delete` | USER, or APP with administrator approval | `bot.raw.app()` / `bot.raw.user()` |
+| `memberships.update` | `spaces.members.patch` | role only; USER, or APP with administrator approval | `bot.raw.app().update_membership` |
+| `users.availability.*` | `users.availability.get` / `patch` / `markAs*` | USER only (`chat.users.availability*`); own state only | `bot.raw.user()` |
+| `users.sections.*` | `users.sections.*`, `users.sections.items.*` | USER only (`chat.users.sections*`) | `bot.raw.user()` |
+| `custom_emojis.*` | `customEmojis.create` / `get` / `list` / `delete` | USER only (`chat.customemojis*`) | `bot.raw.user()` |
+| `admin_access=True` on `spaces.get/search/update/delete`, `memberships.*` | `useAdminAccess` | USER only; `chat.admin.*` scope; the user must be a Workspace administrator | `bot.raw.user()` |
+| `users.read_state` / `thread_read_state` / `notification_setting` | `users.spaces.getSpaceReadState` / `updateSpaceReadState`, `users.spaces.threads.getThreadReadState`, `users.spaces.spaceNotificationSetting.*` | USER only; a space or thread is expanded to `users/me/...` | `bot.raw.user()` |
+| add-on event object (`chat.<trigger>Payload`) | Workspace add-on Chat event object | HTTP; `AddOnTokenVerifier`; same domain events | `event.raw` |
+| handler result for an add-on event | `hostAppDataAction.chatDataAction.*`, `action.navigations`, `action.modifyOperations` | chosen by `event.wire_format` | return mapping / `RawInteractionResponse` |
+| `SystemCommandEvent` | interaction `SYSTEM_COMMAND` (`cancelStream`) | Developer Preview; `PreviewFeature.MESSAGE_STREAMING` | `event.raw` |
+| `experimental.streaming.MessageStreams` | `spaces.streamMessages.*` | Developer Preview; APP only | REST |
+| `experimental.sessions.ThreadSessions` | `spaces.threads.get` / `list` / `patch` | Developer Preview; APP only; 1:1 app DMs | REST |
 | `Button` / `ActionEvent` | Cards v2 `onClick.action` / `CARD_CLICKED` | parameters are strings | `RawWidget`, `event.raw` |
 | `FormInputs` / `FormModel` | `common.formInputs` | surface-specific response | `event.raw` |
 | `Dialog` | `actionResponse.type=DIALOG` | eligible HTTP interaction only | raw response mapping |

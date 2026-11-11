@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import asyncio
+import inspect
 
 from google.apps.chat_v1 import ChatServiceClient
 from google.apps.chat_v1.types.message import CreateMessageRequest, Message
@@ -21,7 +21,7 @@ async def test_create_round_trip() -> None:
     assert result.name.startswith("spaces/AAA/messages/")
     assert result.text == "hello"
     assert transport.requests == [request]
-    assert asyncio.iscoroutinefunction(transport.create_message)
+    assert inspect.iscoroutinefunction(transport.create_message)
 
 
 def test_host_and_wrapped_methods_exist() -> None:

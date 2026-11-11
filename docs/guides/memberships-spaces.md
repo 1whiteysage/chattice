@@ -151,3 +151,73 @@ bulk operation to named Spaces visible to the app.
 
 Mappings such as `"sales" -> ["spaces/A", "spaces/B"]`, retries, concurrency,
 already-member handling, and result summaries belong to application code.
+
+## Search, group chats, and space management
+
+```python
+from google.apps.chat_v1.types import Space
+from google.apps.chat_v1.types.membership import Membership
+
+spaces = await bot.user.spaces.search('display_name:"Launch"')
+chats = await bot.user.spaces.find_group_chats(["users/123", "users/456"])
+
+space = await bot.user.spaces.create(
+    Space(space_type=Space.SpaceType.SPACE, display_name="Launch"),
+    request_id="launch-space-1",
+)
+space.display_name = "Launch 2027"
+await bot.user.spaces.update(space, update_mask=["display_name"])
+await bot.user.memberships.update(
+    f"{space.name}/members/123", role=Membership.MembershipRole.ROLE_MANAGER
+)
+await bot.user.spaces.delete(space.name)
+```
+
+- `spaces.search` returns spaces the calling user has joined. With
+  `admin_access=True` it searches the whole organization (see
+  [Administrator access](#administrator-access)).
+- `spaces.find_group_chats` takes the other human members and returns the
+  group chats whose members are exactly those users and the caller.
+- `spaces.create` and `spaces.update` take the official `Space`. With the APP
+  identity, creation needs Workspace administrator approval and
+  `space.customer`; Chattice rejects a missing customer locally.
+- `spaces.update` sends exactly the field paths in `update_mask`. To change
+  who can view the member list, Google requires both
+  `access_settings.access_permission_settings.viewSpaceMembershipSetting`
+  and `permission_settings.viewSpaceMembership` in one request.
+- `spaces.delete` always cascades: the messages and memberships of the space
+  are deleted with it.
+- `memberships.update` changes the role, the only field Google lets a caller
+  update.
+
+Google mapping: `spaces.search`, `spaces.findGroupChats`, `spaces.create`,
+`spaces.patch`, `spaces.delete`, and `spaces.members.patch`.
+
+## Administrator access
+
+A Google Workspace administrator can manage spaces they are not a member of.
+Pass `admin_access=True` on the USER identity; the credentials need the
+matching `chat.admin.*` scope.
+
+```python
+found = await bot.user.spaces.search(
+    'customer = "customers/my_customer" AND space_type = "SPACE"',
+    admin_access=True,
+)
+async for space in found:
+    members = await bot.user.memberships.list(parent=space.name, admin_access=True)
+    print(space.display_name, len(await members.collect()))
+```
+
+| Method | Scope (any one) |
+| --- | --- |
+| `spaces.get`, `spaces.search` | `chat.admin.spaces`, `chat.admin.spaces.readonly` |
+| `spaces.update` | `chat.admin.spaces` |
+| `spaces.delete` | `chat.admin.delete` |
+| `memberships.get`, `memberships.list` | `chat.admin.memberships`, `chat.admin.memberships.readonly` |
+| `memberships.create`, `memberships.update`, `memberships.delete` | `chat.admin.memberships` |
+
+A call without an admin scope, or on `bot.app`, fails locally with
+`CapabilityNotSupported` before any request. Google decides whether the user
+holds the administrator privilege, and limits what administrator access can do
+(for example, it cannot add a Chat app to a space).

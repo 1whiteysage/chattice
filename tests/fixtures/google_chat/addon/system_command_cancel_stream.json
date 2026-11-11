@@ -1,0 +1,20 @@
+{
+  "commonEventObject": {
+    "hostApp": "CHAT"
+  },
+  "chat": {
+    "user": {
+      "name": "users/USER_ID"
+    },
+    "space": {
+      "name": "spaces/SPACE_ID"
+    },
+    "systemCommandPayload": {
+      "systemCommandMetadata": {
+        "cancelStream": {
+          "streamMessage": "spaces/SPACE_ID/streamMessages/STREAM_ID"
+        }
+      }
+    }
+  }
+}

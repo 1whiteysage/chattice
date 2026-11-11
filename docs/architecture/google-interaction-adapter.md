@@ -64,9 +64,40 @@ and the App Home sample family:
 Outer `commonEventObject` normalizes to the same domain common-data view as a
 direct event's `common`, without making the raw fields interchangeable. If a
 payload supplies both direct and wrapped types or both common objects and they
-disagree, `ConflictingEnvelopeError` is raised. Add-on-specific
-`chat.messagePayload`, `buttonClickedPayload`, and other Workspace add-on
-envelopes are not accepted by this adapter.
+disagree, `ConflictingEnvelopeError` is raised.
+
+## Workspace add-on event objects
+
+A Chat app configured as a Google Workspace add-on receives a different
+family: no `type`, and the trigger is the `chat.<trigger>Payload` key that is
+present ([ADR-014](../adr/ADR-014-workspace-addon-payload-family.md)).
+
+```json
+{
+  "commonEventObject": {"hostApp": "CHAT", "userLocale": "en"},
+  "chat": {
+    "user": {"name": "users/123"},
+    "messagePayload": {"space": {"name": "spaces/AAA"}, "message": {"text": "ping"}}
+  }
+}
+```
+
+The adapter reduces it to the same domain events and records the family in
+`event.wire_format`:
+
+| Trigger payload | Domain event |
+| --- | --- |
+| `messagePayload` | `MessageEvent` |
+| `addedToSpacePayload` / `removedFromSpacePayload` | `AddedToSpaceEvent` / `RemovedFromSpaceEvent` |
+| `buttonClickedPayload` | `ActionEvent` |
+| `widgetUpdatedPayload` | `WidgetUpdatedEvent` |
+| `appCommandPayload` | `CommandEvent` (slash commands included) |
+| `systemCommandPayload` | `SystemCommandEvent` (Developer Preview) |
+| none | `AppHomeEvent`, or `FormSubmitEvent` for a homepage widget interaction |
+| any other `*Payload` | `UnknownEvent` |
+
+Two trigger payloads in one event, or a top-level `type` next to an add-on
+shaped `chat` object, are rejected.
 
 ## Raw preservation and validation
 

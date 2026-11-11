@@ -4,6 +4,147 @@ All notable changes are documented here. Versions follow Python packaging
 conventions. Before 1.0, incompatible changes may be released in a minor
 version and will include upgrade notes.
 
+## [0.4.0] — Google Chat API catch-up
+
+Covers the Google Chat API release notes through 2026-11-04.
+
+### Added
+
+- `bot.user.message_pins` — create, list, and delete message pins (generally
+  available at Google since 2026-09-18).
+- `bot.app.messages.replace_cards(name, cards)` — replace or remove app-owned
+  cards without a user interaction (`spaces.messages.replaceCards`).
+- `citations=` and `cited_sources=` on `messages.create` — inline citations
+  and footer sources, with local validation of markup syntax and citation ids.
+- `markup_syntax=` on `messages.update`.
+- `bot.user.messages.search(query)`, `bot.user.spaces.search(query)`, and
+  `bot.user.spaces.find_group_chats(users)`.
+- `spaces.create`, `spaces.update`, `spaces.delete`, and
+  `memberships.update(name, role=)` on both identities.
+- `bot.user.users.availability` — own presence state and custom status;
+  `bot.user.users.sections` — sidebar sections and their items;
+  `bot.user.custom_emojis` — create, get, list, and delete custom emojis.
+  Each adds `users/me` defaults, local validation, and paging over the SDK.
+- `SystemCommandEvent`, `router.system_command`, and
+  `EventFactory.system_command()` for Google's `SYSTEM_COMMAND` interaction
+  (stream cancellation). Typed routing needs
+  `PreviewFeature.MESSAGE_STREAMING`.
+- `chattice.experimental.streaming` — `MessageStreams` / `MessageStream` over
+  `spaces.streamMessages` (Developer Preview): start, append, replace, commit,
+  discard, and an `async with` form that commits or discards.
+- `chattice.experimental.sessions` — `ThreadSessions` over `spaces.threads`
+  for 1:1 app direct messages (Developer Preview).
+- `PreviewFeature.MESSAGE_STREAMING` and `PreviewFeature.THREAD_SESSIONS`.
+- `FakeChatTransport` implements every newly wrapped method; `MockBot`
+  mirrors the new message keywords and `replace_cards`.
+- **Chat apps built as Google Workspace add-ons** (ADR-014). The interaction
+  adapter accepts the add-on event object (`chat.<trigger>Payload`) and
+  produces the same domain events; `Event.wire_format` records the family and
+  the synchronous response is written in it (`createMessageAction`,
+  `updateMessageAction`, `updateInlinePreviewAction`, `action.navigations`,
+  `modifyOperations`, `basic_authorization_prompt`). New:
+  `chattice.events.WireFormat`, `AddOnTokenVerifier`,
+  `serialize_response()`, `create_chat_router(addon_action_url=)`,
+  `Bot(addon_action_url=)`, `chattice.cards.addon.bind_addon_actions()`,
+  `RequestConfigResponse(resource=)`. See
+  [Workspace add-ons](docs/guides/workspace-addons.md). Written from Google's
+  documentation; not yet exercised against a live add-on deployment.
+- Administrator access: `admin_access=True` on `spaces.get/search/update/
+  delete` and `memberships.create/get/list/update/delete` (USER identity).
+  The `ADMIN` execution variant, modeled since 0.2.0, is now registered for
+  the nine methods that document `useAdminAccess` and enforced by preflight.
+- `Bot(preview_features={...})` and `bot.preview_capabilities`: per-feature
+  Developer Preview enrollment. `Dispatcher(bot=bot)` routes preview events by
+  the Bot's enrollment, so one setting covers both directions.
+  `DEVELOPER_PREVIEW_FEATURES` and `PreviewCapabilities.all()` name what is in
+  preview today.
+- `chattice.testing.fake_bot()` — the real `Bot` on a `FakeChatTransport` in
+  one call, returning `(bot, transport)`.
+- Live smoke tests for message streaming, thread sessions, and
+  `replace_cards` (`tests/integration/live`), and a manual
+  `Live Google smoke` workflow. They are the only check of
+  `chattice.experimental` against Google.
+- Python 3.14 is tested in CI.
+
+### Changed
+
+- Cards can be sent with the USER identity: the local Developer Preview
+  rejection is removed because Google made the feature generally available.
+  The Chat app must be a member of the space.
+- `PreviewFeature.REPLACE_CARDS`, `USER_AUTH_CARDS`, `PINNED_MESSAGES`, and
+  `CUSTOMER_LEVEL_SUBSCRIPTIONS` describe generally available features. The
+  values remain accepted.
+- Every `Operation` now has a registry spec; the seven previously declared but
+  unregistered operations are implemented.
+- Availability is no longer raw-only: the wrapper qualifies for the curated
+  facade (ADR-012) through identity preflight and local validation.
+- Minimum `google-apps-chat` is 0.10.9 (message pins, `replaceCards`,
+  citation types). The lock moves to google-auth 2.62.2, google-cloud-pubsub
+  2.43.0, and google-apps-card 0.7.1.
+- Each preview gate checks its own `PreviewFeature` and names it in the
+  error. `Bot(enable_preview=True)` still enrolls in everything.
+- `MockBot` raises an `AttributeError` that names any resource or method it
+  does not mirror and points to `fake_bot()`. A test compares the mirrored
+  signatures with the real client.
+- The daily upstream monitor reports what changed
+  (`scripts/upstream_report.py`): discovery methods that are neither
+  registered nor on the reviewed allowlist
+  (`.github/upstream-allowlist.json`); methods, OAuth scopes, schema fields,
+  enum values and deprecation flags added or removed since the reviewed
+  snapshot (`.github/upstream-snapshot.json`); new or edited release notes;
+  SDK releases. A republished discovery document with only a new `revision`
+  no longer opens an issue. After review run
+  `uv run python scripts/upstream_report.py --update-baseline`.
+- Internal: resource clients reach the SDK through one typed helper, and
+  `Messages.create`, the interaction parser, and the response serializer are
+  split into focused functions. No behavior change.
+- The `gemini` extra accepts google-genai 3.x (`>=1,<4`).
+- The lock updates certifi, filelock, msgpack, opentelemetry-api, and pyasn1 to
+  versions without known advisories, so `pip-audit` passes again.
+
+### Fixed
+
+- `bot.user.users.read_state`, `thread_read_state`, and
+  `notification_setting` sent the space or thread name as the resource name;
+  Google expects `users/{user}/spaces/{space}/spaceReadState` (and the
+  matching thread and notification names). A space, a thread, or the full
+  resource name is now accepted and the correct name is sent.
+  `notification_setting.update` no longer modifies the caller's `setting`.
+- MockBot `messages.update/replace_cards/get/delete` and `spaces.get` accept
+  `config=` like the real client.
+- `FakeChatTransport.close()` no longer raises `NotImplementedError`, so
+  `Bot.close()` works on a fake transport.
+
+### Upgrade notes
+
+- Install `google-apps-chat>=0.10.9`.
+- A `SYSTEM_COMMAND` interaction is now parsed as `SystemCommandEvent`
+  instead of `UnknownEvent`. Without the `MESSAGE_STREAMING` opt-in it reaches
+  only `router.event` handlers, so a `router.unknown_event` handler that
+  relied on it no longer receives it.
+- Code that caught `CapabilityNotSupported` to detect USER-identity card
+  sends no longer gets that error; the request goes to Google.
+- Tests that used `Operation.SPACES_SEARCH` (or another formerly unregistered
+  operation) to trigger `UnknownOperation` need an empty `OperationRegistry`.
+- A payload with a `chat` object and no `type` used to be rejected with
+  `UnsupportedEnvelopeError`; it is now parsed as an add-on event object.
+- `Event` has a new field `wire_format`; event equality includes it.
+- The action parameter name `chattice_function` is reserved when add-on
+  action binding is enabled.
+- `PreviewCapabilities.require()` has a new error text that names the
+  feature and the Bot options.
+- Code that patches `OperationExecutor.execute` in tests keeps working for
+  normal calls; calls with `admin_access=True` also pass `variant=`.
+
+### Not covered
+
+- Organization-wide (customer-level) Workspace Events subscriptions are
+  generally available, but creating subscriptions is still outside the curated
+  surface; received events parse as before.
+- Space events (`spaces.spaceEvents`) and import mode stay on `bot.raw`.
+- `GetChatAppConfig` / `UpdateChatAppConfig` (Workspace Add-ons API,
+  Developer Preview) are not wrapped.
+
 ## [0.3.5] — Google API compatibility
 
 ### Changed

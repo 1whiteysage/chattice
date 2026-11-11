@@ -102,9 +102,12 @@ Workspace admin configuration of the delegation and scopes.
 ### useAdminAccess
 
 `useAdminAccess` is Google's separate administrator mode with its own
-per-method scope requirements. It is **documented only** here — the
-framework does not plumb it through any request, so treat it as out of scope
-until it is implemented.
+per-method scope requirements. The nine methods that document it accept
+`admin_access=True` on the USER identity (`bot.user.spaces.get/search/
+update/delete`, `bot.user.memberships.create/get/list/update/delete`). The
+registry models it as the `ADMIN` execution variant: preflight then requires a
+`chat.admin.*` scope and the request carries `use_admin_access`. Whether the
+user really is a Workspace administrator stays with Google.
 
 ## Refresh contract
 

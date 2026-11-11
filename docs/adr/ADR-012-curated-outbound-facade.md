@@ -76,6 +76,10 @@ requires public API compatibility even before 1.0.
    scopes, request/response types, parameters). Semantic constraints
    (identity selection, admin approval, preview status, resource
    restrictions) stay human-reviewed metadata and are never generated.
+   The watch also reports coverage: a discovery method that is neither
+   registered nor on the reviewed allowlist of intentionally unwrapped
+   methods (`.github/upstream-allowlist.json`) is listed for triage, so
+   "not wrapped" is always a recorded decision.
 
 7. **Pagination is explicit.** List and search methods expose async
    iteration by default and a convenience `limit=` / `collect()` for

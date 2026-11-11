@@ -68,8 +68,8 @@ CHATTICE_GOOGLE_CREDENTIALS=/path/to/service-account.json \
   pytest tests/integration/live -m google_live
 ```
 
-Without credentials the same command reports **3 skipped** — that is the
-expected, honest behavior:
+Without credentials the same command reports the network tests as skipped
+— that is the expected, honest behavior:
 
 ```bash
 uv run pytest tests/integration/live -q
@@ -77,3 +77,41 @@ uv run pytest tests/integration/live -q
 
 In CI the live directory always skips (the env var is not set), so the default
 `uv run pytest -q` stays green.
+
+## 7. Developer Preview tests
+
+`chattice.experimental` (message streaming, thread sessions) calls Google
+methods that are in neither the Python SDK nor the public discovery document.
+These live tests are the only check that the framework still matches Google:
+
+```bash
+CHATTICE_GOOGLE_CREDENTIALS=/path/to/service-account.json \
+CHATTICE_GOOGLE_SPACE=spaces/AAA \
+CHATTICE_GOOGLE_PREVIEW=1 \
+CHATTICE_GOOGLE_DM_SPACE=spaces/BBB \
+  uv run pytest tests/integration/live -m google_live -rs
+```
+
+- `CHATTICE_GOOGLE_PREVIEW=1` — the Cloud project is enrolled in the
+  [Google Workspace Developer Preview Program](https://developers.google.com/workspace/preview).
+- `CHATTICE_GOOGLE_SPACE` must be a threaded space for the streaming tests.
+- `CHATTICE_GOOGLE_DM_SPACE` — a 1:1 direct message with the app, for the
+  thread sessions test; without it that one test skips.
+
+The streaming tests anchor the stream to a message the app itself creates and
+delete every message they leave behind.
+
+## 8. Run from GitHub Actions
+
+`.github/workflows/live.yml` runs this directory on demand
+(**Actions → Live Google smoke → Run workflow**). It needs an environment
+named `google-live` with:
+
+| Kind | Name | Value |
+| --- | --- | --- |
+| Secret | `CHATTICE_GOOGLE_CREDENTIALS_JSON` | the service-account key file content |
+| Variable | `CHATTICE_GOOGLE_SPACE` | `spaces/...` test space |
+| Variable | `CHATTICE_GOOGLE_DM_SPACE` | optional, for thread sessions |
+
+The workflow never runs automatically and fails if the network tests skip, so
+a green run means Google was actually called.

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "chattice"
-version = "0.3.5"
+version = "0.4.0"
 description = "Async typed event framework for Google Chat apps"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -28,10 +28,11 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Typing :: Typed",
 ]
 dependencies = [
-  "google-apps-chat>=0.10.5,<1.0.0",
+  "google-apps-chat>=0.10.9,<1.0.0",
   "google-auth>=2.30,<3",
   "pydantic>=2.10,<3.0",
 ]
@@ -50,7 +51,7 @@ redis = [
   "redis>=5,<7",
 ]
 gemini = [
-  "google-genai>=1,<3",
+  "google-genai>=1,<4",
 ]
 pubsub = [
     "google-cloud-pubsub>=2.21,<3",
@@ -70,7 +71,7 @@ dev = [
   "google-api-python-client>=2.198,<3",
   "google-cloud-pubsub>=2.21,<3",
   "google-cloud-storage>=3,<4",
-  "google-genai>=1,<3",
+  "google-genai>=1,<4",
   "httpx>=0.27,<1",
   "mkdocstrings[python]>=1.0.6",
   "mypy>=1.15,<2",

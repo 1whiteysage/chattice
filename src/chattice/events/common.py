@@ -6,6 +6,21 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 
+class WireFormat(StrEnum):
+    """Which Google payload family delivered an interaction.
+
+    Google sends the same user interaction in two JSON shapes, depending
+    on how the Chat app is configured in the Google Cloud console. The
+    synchronous response must use the matching shape, so the event keeps
+    the family it arrived in.
+    """
+
+    # Chat API interaction events: a top-level ``type`` discriminator.
+    CHAT_API = "chat_api"
+    # Google Workspace add-on event objects: ``chat.<trigger>Payload``.
+    ADDON = "addon"
+
+
 class DialogEventType(StrEnum):
     """Stable documented Google Chat dialog interaction types."""
 
@@ -30,4 +45,4 @@ class TimeZone:
     offset_ms: int | None = None
 
 
-__all__ = ["DialogEventType", "DialogMetadata", "TimeZone"]
+__all__ = ["DialogEventType", "DialogMetadata", "TimeZone", "WireFormat"]

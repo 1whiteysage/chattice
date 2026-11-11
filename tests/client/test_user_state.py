@@ -72,7 +72,8 @@ async def test_read_state_update_builds_timestamp_request(
 
     user_client = cast(Any, bot._user_client)
     state, mask = user_client.calls[0]
-    assert state.name == "spaces/A"
+    # Google names the resource under the calling user.
+    assert state.name == "users/me/spaces/A/spaceReadState"
     assert state.last_read_time == moment
     assert list(mask.paths) == ["last_read_time"]
 
@@ -128,3 +129,46 @@ class _UserCredentials(AnonymousCredentials):
 
 def _user_creds() -> AnonymousCredentials:
     return _UserCredentials()
+
+
+def test_per_user_resource_names_follow_google_patterns() -> None:
+    from chattice.client._names import _user_space_state, _user_thread_read_state
+    from chattice.client.errors import ChatAPIError
+    from chattice.events import SpaceRef, ThreadRef
+
+    assert _user_space_state("A", "spaceReadState") == (
+        "users/me/spaces/A/spaceReadState"
+    )
+    assert _user_space_state(SpaceRef(name="spaces/A"), "spaceNotificationSetting") == (
+        "users/me/spaces/A/spaceNotificationSetting"
+    )
+    # A full resource name of the right kind is kept as given.
+    full = "users/123/spaces/A/spaceReadState"
+    assert _user_space_state(full, "spaceReadState") == full
+    with pytest.raises(ChatAPIError):
+        _user_space_state(full, "spaceNotificationSetting")
+
+    thread = "spaces/A/threads/T"
+    expected = "users/me/spaces/A/threads/T/threadReadState"
+    assert _user_thread_read_state(thread) == expected
+    assert _user_thread_read_state(ThreadRef(name=thread)) == expected
+    assert _user_thread_read_state(expected) == expected
+    with pytest.raises(ChatAPIError):
+        _user_thread_read_state("spaces/A")
+
+
+async def test_notification_update_does_not_mutate_the_callers_setting(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from google.apps.chat_v1.types.space_notification_setting import (
+        SpaceNotificationSetting,
+    )
+
+    await _record_executor(monkeypatch)
+    setting = SpaceNotificationSetting()
+
+    await _bot().user.users.notification_setting.update(
+        "spaces/A", setting=setting, update_mask=["mute_setting"]
+    )
+
+    assert setting.name == ""

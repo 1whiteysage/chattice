@@ -8,7 +8,7 @@ from google.auth.credentials import AnonymousCredentials
 
 from chattice.auth import AuthMode
 from chattice.capabilities import CapabilityNotSupported, Operation
-from chattice.capabilities.registry import UnknownOperation
+from chattice.capabilities.registry import OperationRegistry, UnknownOperation
 from chattice.client import Bot
 from chattice.client.config import RequestConfig
 from chattice.client.errors import ChatPermissionDeniedError
@@ -87,7 +87,9 @@ async def test_wrong_identity_fails_without_fallback() -> None:
 
 async def test_unknown_operation_raises() -> None:
     bot = _bot()
-    executor: OperationExecutor[object] = OperationExecutor(bot)
+    executor: OperationExecutor[object] = OperationExecutor(
+        bot, registry=OperationRegistry([])
+    )
 
     async def call(client: object, config: RequestConfig) -> object:
         raise AssertionError("must not be called")

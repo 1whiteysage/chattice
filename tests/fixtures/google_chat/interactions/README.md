@@ -27,6 +27,7 @@ Per-fixture derivation:
 | `card_clicked_request_dialog.json` | Minimized Event schema with `isDialogEvent`/`REQUEST_DIALOG` as documented by DialogEventType. |
 | `card_clicked_submit_dialog.json` | Minimized dialog guide's documented `CARD_CLICKED` + `SUBMIT_DIALOG` behavior. |
 | `card_clicked_cancel_dialog.json` | Minimized DialogEventType's documented `CARD_CLICKED` + `CANCEL_DIALOG` behavior. |
+| `system_command_cancel_stream.json` | The “Google Chat API” `SYSTEM_COMMAND` payload from [Stream messages](https://developers.google.com/workspace/chat/stream-messages), copied with its placeholder identifiers (Developer Preview). |
 | `widget_updated.json` | Minimized Event/EventType `WIDGET_UPDATED` shape with documented associated CommonEventObject action metadata. |
 | `app_command.json` | Minimized Event `AppCommandMetadata` JSON schema for a documented **QUICK_COMMAND** (numeric command ID, `QUICK_COMMAND` type). |
 | `slash_command.json` | Documented slash-command shape from the [command guide](https://developers.google.com/workspace/chat/commands): `MESSAGE` + `message.slashCommand.commandId` (int64 string) + `argumentText` + `message.sender.type`, using placeholder values. |

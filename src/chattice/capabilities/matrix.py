@@ -18,6 +18,7 @@ from enum import Enum, auto
 
 from chattice.events import (
     ActionEvent,
+    ActionSource,
     AppHomeEvent,
     CommandEvent,
     DialogEventType,
@@ -25,9 +26,11 @@ from chattice.events import (
     FormSubmitEvent,
     MessageEvent,
     WidgetUpdatedEvent,
+    WireFormat,
 )
 
 __all__ = [
+    "DEVELOPER_PREVIEW_FEATURES",
     "PREVIEW_APP_COMMAND_TYPES",
     "CapabilityNotSupported",
     "PreviewCapabilities",
@@ -147,6 +150,12 @@ class ResponseCapabilities:
         if isinstance(event, WidgetUpdatedEvent):
             capabilities.add(ResponseCapability.UPDATE_WIDGET)
         if isinstance(event, ActionEvent):
+            if (
+                event.wire_format is WireFormat.ADDON
+                and event.source is ActionSource.HOME
+            ):
+                # Add-on homepage card click: answered with updateCard.
+                capabilities.add(ResponseCapability.APP_HOME)
             if event.sender_type == "BOT":
                 capabilities.add(ResponseCapability.CARD_UPDATE_BOT)
             elif event.sender_type == "HUMAN":
@@ -163,19 +172,46 @@ class PreviewFeature(Enum):
     so documentation and code reference ONE list of preview surfaces.
     """
 
-    MESSAGE_ACTION = auto()  # Legacy opt-in retained for compatibility; now GA
+    # Generally available; the values remain accepted for compatibility.
+    MESSAGE_ACTION = auto()  # APP_COMMAND message actions
     REPLACE_CARDS = auto()  # messages.replaceCards
     USER_AUTH_CARDS = auto()  # card creation with user auth
     CUSTOMER_LEVEL_SUBSCRIPTIONS = auto()  # Workspace Events customer-level
-    PINNED_MESSAGES = auto()  # chat.spaces.pins
-    RELEVANCE_SEARCH_ORDERING = auto()  # messages/spaces search relevance
+    PINNED_MESSAGES = auto()  # spaces.messagePins
+    # Developer Preview.
+    RELEVANCE_SEARCH_ORDERING = auto()  # messages search ordered by relevance
+    MESSAGE_STREAMING = auto()  # spaces.streamMessages and SYSTEM_COMMAND
+    THREAD_SESSIONS = auto()  # 1:1 DM sessions through spaces.threads
+
+
+# Features that are in Developer Preview today. ``enable_preview=True``
+# enrolls in exactly these.
+DEVELOPER_PREVIEW_FEATURES: frozenset[PreviewFeature] = frozenset(
+    {
+        PreviewFeature.RELEVANCE_SEARCH_ORDERING,
+        PreviewFeature.MESSAGE_STREAMING,
+        PreviewFeature.THREAD_SESSIONS,
+    }
+)
 
 
 class PreviewCapabilities:
-    """Explicit enrollment set for typed Developer Preview routing."""
+    """The Developer Preview features an application has enrolled in.
+
+    One set governs both directions: outbound preview calls on the
+    ``Bot`` and typed routing of preview events in the ``Dispatcher``.
+    Configure it once on the Bot (``enable_preview=True`` or
+    ``preview_features=...``); a ``Dispatcher(bot=bot)`` uses the same
+    enrollment.
+    """
 
     def __init__(self, features: Iterable[PreviewFeature] = ()) -> None:
         self._features = frozenset(features)
+
+    @classmethod
+    def all(cls) -> PreviewCapabilities:
+        """Enrollment in every feature that is in Developer Preview."""
+        return cls(DEVELOPER_PREVIEW_FEATURES)
 
     def __contains__(self, feature: PreviewFeature) -> bool:
         return feature in self._features
@@ -183,17 +219,35 @@ class PreviewCapabilities:
     def __iter__(self) -> Iterator[PreviewFeature]:
         return iter(self._features)
 
-    def require(self, feature: PreviewFeature) -> None:
-        if feature not in self._features:
-            raise CapabilityNotSupported(
-                f"{feature.name} is a Developer Preview feature; enable it "
-                "explicitly on Dispatcher(preview_features=...)."
-            )
+    def __bool__(self) -> bool:
+        return bool(self._features)
+
+    def __or__(self, other: PreviewCapabilities) -> PreviewCapabilities:
+        if not isinstance(other, PreviewCapabilities):
+            return NotImplemented
+        return PreviewCapabilities(self._features | other._features)
+
+    def require(self, feature: PreviewFeature, *, what: str | None = None) -> None:
+        """Raise ``CapabilityNotSupported`` unless ``feature`` is enrolled.
+
+        ``what`` names the attempted action in the error message.
+        """
+        if feature in self._features:
+            return
+        subject = what or feature.name
+        raise CapabilityNotSupported(
+            f"{subject} is a Google Developer Preview and requires explicit "
+            "opt-in: Bot(..., enable_preview=True) or "
+            f"preview_features={{PreviewFeature.{feature.name}}}."
+        )
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, PreviewCapabilities):
             return NotImplemented
         return self._features == other._features
+
+    def __hash__(self) -> int:
+        return hash(self._features)
 
 
 # APP_COMMAND types that are Developer Preview: the adapter accepts them

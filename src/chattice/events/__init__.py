@@ -4,7 +4,7 @@ from .action import ActionEvent, ActionSource
 from .app_home import AppHomeEvent, FormSubmitEvent
 from .base import Event
 from .command import CommandEvent, CommandKind
-from .common import DialogEventType, DialogMetadata, TimeZone
+from .common import DialogEventType, DialogMetadata, TimeZone, WireFormat
 from .error import ErrorEvent
 from .form import (
     DateInput,
@@ -18,6 +18,7 @@ from .form import (
 from .message import MessageEvent
 from .references import MessageRef, SpaceRef, ThreadRef, UserRef
 from .space import AddedToSpaceEvent, RemovedFromSpaceEvent
+from .system_command import SystemCommandEvent
 from .unknown import UnknownEvent
 from .widget import WidgetUpdatedEvent
 
@@ -42,6 +43,7 @@ __all__ = [
     "RemovedFromSpaceEvent",
     "SpaceRef",
     "StringInput",
+    "SystemCommandEvent",
     "ThreadRef",
     "TimeInput",
     "TimeZone",
@@ -49,4 +51,5 @@ __all__ = [
     "UnknownFormInput",
     "UserRef",
     "WidgetUpdatedEvent",
+    "WireFormat",
 ]

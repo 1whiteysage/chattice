@@ -15,7 +15,11 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 from google.api_core import exceptions as api_core_exceptions
 
 from chattice.auth import AuthMode
-from chattice.capabilities import CapabilityNotSupported, Operation
+from chattice.capabilities import (
+    CapabilityNotSupported,
+    ExecutionVariant,
+    Operation,
+)
 from chattice.capabilities.registry import REGISTRY, OperationRegistry
 from chattice.client.config import RequestConfig
 from chattice.client.errors import wrap_api_error
@@ -52,7 +56,14 @@ class OperationExecutor(Generic[T]):
         identity: AuthMode,
         call: _RpcCall[T],
         config: RequestConfig | None = None,
+        variant: ExecutionVariant = ExecutionVariant.NORMAL,
     ) -> T:
+        """Run ``call`` after the registry checks for ``identity``.
+
+        ``variant`` selects the auth paths the preflight accepts; the
+        caller sets the matching request flag (for ``ADMIN``:
+        ``use_admin_access``) on the request it sends.
+        """
         spec = self._registry.spec(operation)
         if config is None:
             config = RequestConfig()
@@ -62,7 +73,7 @@ class OperationExecutor(Generic[T]):
                 "explicit opt-in: Bot(..., enable_preview=True)"
             )
         await self._bot._preflight_operation(
-            operation, identity=identity, registry=self._registry
+            operation, identity=identity, variant=variant, registry=self._registry
         )
         client = await self._resolve_client(identity)
         try:
