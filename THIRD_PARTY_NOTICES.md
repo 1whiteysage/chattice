@@ -39,7 +39,7 @@ GPL/AGPL/SSPL dependency is declared.
 | [mkdocs-material](https://github.com/squidfunk/mkdocs-material) | 9.7.7 | MIT |
 | [mkdocstrings[python]](https://github.com/mkdocstrings/mkdocstrings) | 1.0.6 | ISC |
 | [mypy](https://github.com/python/mypy) | 1.20.2 | MIT (with identified PSF-licensed portions) |
-| [pyjwt](https://github.com/jpadilla/pyjwt) | 2.13.0 | MIT |
+| [pyjwt](https://github.com/jpadilla/pyjwt) | 2.15.1 | MIT |
 | [pytest](https://github.com/pytest-dev/pytest) | 9.1.1 | MIT |
 | [pytest-asyncio](https://github.com/pytest-dev/pytest-asyncio) | 1.4.0 | Apache-2.0 |
 | [pytest-cov](https://github.com/pytest-dev/pytest-cov) | 7.1.0 | MIT |

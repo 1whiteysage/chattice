@@ -316,6 +316,16 @@ def _enum_values(spec: Mapping[str, Any]) -> list[str]:
     return sorted(str(value) for value in values)
 
 
+def _deprecated_field_labels(label: str, spec: Mapping[str, Any]) -> list[str]:
+    """``Schema.field`` and ``Schema.field=VALUE`` labels the document flags."""
+    labels = [label] if spec.get("deprecated") else []
+    flags = spec.get("enumDeprecated") or []
+    for value, flagged in zip(spec.get("enum") or [], flags, strict=False):
+        if flagged:
+            labels.append(f"{label}={value}")
+    return labels
+
+
 def snapshot_discovery(document: Mapping[str, Any]) -> DiscoverySnapshot:
     """Reduce a discovery document to the surface the report diffs.
 
@@ -338,16 +348,10 @@ def snapshot_discovery(document: Mapping[str, Any]) -> DiscoverySnapshot:
     for schema_name, schema in sorted((document.get("schemas") or {}).items()):
         if schema.get("deprecated"):
             deprecated.add(schema_name)
-        fields: dict[str, list[str]] = {}
-        for name, spec in sorted((schema.get("properties") or {}).items()):
-            fields[name] = _enum_values(spec)
-            if spec.get("deprecated"):
-                deprecated.add(f"{schema_name}.{name}")
-            flags = spec.get("enumDeprecated") or []
-            for value, flagged in zip(spec.get("enum") or [], flags, strict=False):
-                if flagged:
-                    deprecated.add(f"{schema_name}.{name}={value}")
-        schemas[schema_name] = fields
+        properties = sorted((schema.get("properties") or {}).items())
+        schemas[schema_name] = {name: _enum_values(spec) for name, spec in properties}
+        for name, spec in properties:
+            deprecated.update(_deprecated_field_labels(f"{schema_name}.{name}", spec))
 
     oauth = (document.get("auth") or {}).get("oauth2") or {}
     return {

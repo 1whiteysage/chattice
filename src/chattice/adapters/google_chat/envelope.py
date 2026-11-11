@@ -94,35 +94,15 @@ def _chat_api_event(
     wrapped: Mapping[str, object] | None,
     outer_common: Mapping[str, object] | None,
 ) -> dict[str, object]:
-    direct_type = raw.get("type")
     if wrapped is None:
-        if direct_type is None:
+        if raw.get("type") is None:
             raise UnsupportedEnvelopeError(
                 "Expected a direct 'type' field or a 'chat' event object"
             )
         event = dict(raw)
         event.pop("commonEventObject", None)
     else:
-        event = dict(wrapped)
-        wrapped_type = event.get("type")
-        if wrapped_type is None:
-            # A direct ``type`` next to an add-on shaped ``chat`` object:
-            # the two families cannot be mixed.
-            raise UnsupportedEnvelopeError("The wrapped 'chat' event requires 'type'")
-        if direct_type is not None:
-            if direct_type != wrapped_type:
-                raise ConflictingEnvelopeError(
-                    "Direct and wrapped event types conflict: "
-                    f"{direct_type!r} != {wrapped_type!r}"
-                )
-            for key, value in raw.items():
-                if key in {"chat", "commonEventObject", "common", "type"}:
-                    continue
-                if key in event and event[key] != value:
-                    raise ConflictingEnvelopeError(
-                        f"Direct and wrapped event field {key!r} conflicts"
-                    )
-                event.setdefault(key, value)
+        event = _wrapped_event(raw, wrapped)
 
     inner_common = event.get("common")
     if inner_common is not None and not isinstance(inner_common, Mapping):
@@ -134,6 +114,35 @@ def _chat_api_event(
             )
     if outer_common is not None:
         event["common"] = dict(outer_common)
+    return event
+
+
+def _wrapped_event(
+    raw: dict[str, object], wrapped: Mapping[str, object]
+) -> dict[str, object]:
+    """The App Home style event under ``chat``, checked against direct fields."""
+    event = dict(wrapped)
+    wrapped_type = event.get("type")
+    if wrapped_type is None:
+        # A direct ``type`` next to an add-on shaped ``chat`` object:
+        # the two families cannot be mixed.
+        raise UnsupportedEnvelopeError("The wrapped 'chat' event requires 'type'")
+    direct_type = raw.get("type")
+    if direct_type is None:
+        return event
+    if direct_type != wrapped_type:
+        raise ConflictingEnvelopeError(
+            "Direct and wrapped event types conflict: "
+            f"{direct_type!r} != {wrapped_type!r}"
+        )
+    for key, value in raw.items():
+        if key in {"chat", "commonEventObject", "common", "type"}:
+            continue
+        if key in event and event[key] != value:
+            raise ConflictingEnvelopeError(
+                f"Direct and wrapped event field {key!r} conflicts"
+            )
+        event.setdefault(key, value)
     return event
 
 

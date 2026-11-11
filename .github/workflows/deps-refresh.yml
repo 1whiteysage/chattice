@@ -1,0 +1,79 @@
+name: Dependency refresh
+
+# One pull request a week with every in-range dependency upgrade:
+# uv.lock, the SBOM and THIRD_PARTY_NOTICES.md move together, so the
+# pull request passes the lock, SBOM and notices checks without manual
+# work. Nothing is merged automatically.
+#
+# Requires the repository setting "Allow GitHub Actions to create and
+# approve pull requests" (Settings > Actions > General).
+
+on:
+  schedule:
+    - cron: "23 5 * * 1" # Mondays, 05:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: deps-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BRANCH: deps/weekly-refresh
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          python-version: "3.12"
+          enable-cache: false
+      - name: Upgrade the lock within the declared version ranges
+        run: |
+          set -euo pipefail
+          uv lock --upgrade
+          # Both scripts read uv.lock with the standard library only.
+          uv run --no-project python scripts/gen_sbom.py
+          uv run --no-project python scripts/sync_notices.py
+      - name: Open or update the pull request
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "Dependencies are up to date."
+            exit 0
+          fi
+          {
+            echo "In-range dependency upgrades from \`uv lock --upgrade\`."
+            echo
+            echo "The SBOM and \`THIRD_PARTY_NOTICES.md\` were regenerated from the new lock."
+            echo
+            echo '```diff'
+            git diff --unified=0 THIRD_PARTY_NOTICES.md | grep -E '^[+-]\|' || true
+            echo '```'
+            echo
+            echo "Review the changelog of any upgraded Google SDK before merging"
+            echo "(MAINTAINING.md, \"Dependency updates\")."
+          } > "${RUNNER_TEMP}/body.md"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "${BRANCH}"
+          git commit -am "Refresh locked dependencies"
+          git push --force origin "${BRANCH}"
+          number="$(gh pr list --head "${BRANCH}" --state open --json number --jq '.[0].number // empty')"
+          if [ -n "${number}" ]; then
+            gh pr edit "${number}" --body-file "${RUNNER_TEMP}/body.md"
+          else
+            gh pr create --base main --head "${BRANCH}" \
+              --title "Refresh locked dependencies" \
+              --body-file "${RUNNER_TEMP}/body.md"
+          fi
+          # A push made with GITHUB_TOKEN does not start `pull_request`
+          # workflows; request the checks for the branch explicitly.
+          gh workflow run ci.yml --ref "${BRANCH}"

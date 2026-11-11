@@ -105,38 +105,36 @@ def _is_async_callback(callback: HandlerCallback) -> bool:
     return inspect.iscoroutinefunction(type(callback).__call__)
 
 
+# Handler parameter names that receive the event, by event class.
+_EVENT_ALIASES: tuple[tuple[type[Event], tuple[str, ...]], ...] = (
+    (MessageEvent, ("message",)),
+    (ActionEvent, ("action",)),
+    (CommandEvent, ("command",)),
+    (AddedToSpaceEvent, ("added_to_space",)),
+    (RemovedFromSpaceEvent, ("removed_from_space",)),
+    (SystemCommandEvent, ("system_command",)),
+    (WidgetUpdatedEvent, ("widget",)),
+    (AppHomeEvent, ("app_home",)),
+    (FormSubmitEvent, ("form",)),
+    (UnknownEvent, ("unknown",)),
+    (ErrorEvent, ("error", "error_event")),
+)
+_DIALOG_ALIASES: dict[str, str] = {
+    DialogEventType.SUBMIT_DIALOG.value: "dialog_submit",
+    DialogEventType.CANCEL_DIALOG.value: "dialog_cancel",
+}
+
+
 def _event_aliases(event: Event) -> frozenset[str]:
     aliases = {"event"}
-    if isinstance(event, MessageEvent):
-        aliases.add("message")
-    elif isinstance(event, ActionEvent):
-        aliases.add("action")
-        if event.dialog is not None and (
-            event.dialog.type == DialogEventType.SUBMIT_DIALOG
-        ):
-            aliases.add("dialog_submit")
-        elif event.dialog is not None and (
-            event.dialog.type == DialogEventType.CANCEL_DIALOG
-        ):
-            aliases.add("dialog_cancel")
-    elif isinstance(event, CommandEvent):
-        aliases.add("command")
-    elif isinstance(event, AddedToSpaceEvent):
-        aliases.add("added_to_space")
-    elif isinstance(event, RemovedFromSpaceEvent):
-        aliases.add("removed_from_space")
-    elif isinstance(event, SystemCommandEvent):
-        aliases.add("system_command")
-    elif isinstance(event, WidgetUpdatedEvent):
-        aliases.add("widget")
-    elif isinstance(event, AppHomeEvent):
-        aliases.add("app_home")
-    elif isinstance(event, FormSubmitEvent):
-        aliases.add("form")
-    elif isinstance(event, UnknownEvent):
-        aliases.add("unknown")
-    elif isinstance(event, ErrorEvent):
-        aliases.update(("error", "error_event"))
+    for event_type, names in _EVENT_ALIASES:
+        if isinstance(event, event_type):
+            aliases.update(names)
+            break
+    if isinstance(event, ActionEvent) and event.dialog is not None:
+        dialog_alias = _DIALOG_ALIASES.get(str(event.dialog.type))
+        if dialog_alias is not None:
+            aliases.add(dialog_alias)
     return frozenset(aliases)
 
 

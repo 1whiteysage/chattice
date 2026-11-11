@@ -166,6 +166,40 @@ def _check_attachment_items(
             )
 
 
+def _check_create_mode(
+    actual_mode: AuthMode | None,
+    accessory_widgets: Sequence[AccessoryWidget] | None,
+) -> None:
+    if accessory_widgets and actual_mode is not AuthMode.APP:
+        raise CapabilityNotSupported(
+            "Accessory widgets require app authentication (chat.bot)."
+        )
+    if actual_mode is AuthMode.NONE:
+        raise CapabilityNotSupported(
+            "MESSAGE_CREATE is not supported in this configuration. "
+            "Creating messages requires app or user authentication and "
+            "an admissible OAuth scope."
+        )
+
+
+def _text_message(
+    text: str | None,
+    markup_syntax: MarkupSyntax | None,
+    citations: Sequence[Citation] | None,
+    cited_sources: Sequence[CitedSource] | None,
+) -> Message:
+    """The text part of a new message: text, markup, and its sources."""
+    message = Message(text=text or "")
+    if markup_syntax is not None:
+        message.markup_syntax = markup_syntax
+    if citations or cited_sources:
+        message.elements = Elements(
+            citations=list(citations or ()),
+            cited_sources=list(cited_sources or ()),
+        )
+    return message
+
+
 def _apply_thread(
     message: Message, thread: ThreadRef | None, reply_option: object
 ) -> Any:
@@ -265,30 +299,14 @@ class Messages(ResourceClient):
         viewer = _private_viewer(private_to, actual_mode, accessory_widgets)
         parent = _canonical_space(space)
         _check_attachment_items(attachment_list, parent)
-        if accessory_widgets and actual_mode is not AuthMode.APP:
-            raise CapabilityNotSupported(
-                "Accessory widgets require app authentication (chat.bot)."
-            )
-        if actual_mode is AuthMode.NONE:
-            raise CapabilityNotSupported(
-                "MESSAGE_CREATE is not supported in this configuration. "
-                "Creating messages requires app or user authentication and "
-                "an admissible OAuth scope."
-            )
+        _check_create_mode(actual_mode, accessory_widgets)
         if has_attachments:
             # Fail locally BEFORE any media I/O (upload) when the USER
             # identity or its scopes are absent — media work must never
             # run for a send that will be rejected.
             await self._require_user_attachment_auth(attachment_list)
 
-        message = Message(text=text or "")
-        if markup_syntax is not None:
-            message.markup_syntax = markup_syntax
-        if citations or cited_sources:
-            message.elements = Elements(
-                citations=list(citations or ()),
-                cited_sources=list(cited_sources or ()),
-            )
+        message = _text_message(text, markup_syntax, citations, cited_sources)
         if card is not None:
             message.cards_v2.append(await self._card_with_id(card, "card"))
         for entry in await self._attach(parent, attachment_list, timeout):

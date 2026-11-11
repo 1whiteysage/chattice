@@ -4,6 +4,40 @@ All notable changes are documented here. Versions follow Python packaging
 conventions. Before 1.0, incompatible changes may be released in a minor
 version and will include upgrade notes.
 
+## [Unreleased]
+
+No change to the public API or to runtime behavior.
+
+### Changed
+
+- Every function is within enforced limits: cyclomatic complexity 10,
+  12 branches, 50 statements (`ruff` rules `C901`, `PLR0912`, `PLR0915`).
+  Twelve functions were split to get there, among them the Pub/Sub delivery
+  state machine, the dispatcher routing pass, the card section parser, and
+  `Bot.close`.
+- Dependabot uses the `uv` ecosystem, so its pull requests update `uv.lock`
+  together with `pyproject.toml`.
+- CI runs can be requested for a branch (`workflow_dispatch`), cancel
+  superseded pull request runs, and have a time limit.
+
+### Added
+
+- `MAINTAINING.md` — the maintainer runbook: what runs by itself, the weekly
+  routine, how to triage a Google change, how to release.
+- `scripts/prepare_release.py` — bumps the version everywhere it is stated,
+  turns `[Unreleased]` into the release section, and regenerates the lock,
+  SBOM and notices.
+- `scripts/sync_notices.py` — keeps the version column of
+  `THIRD_PARTY_NOTICES.md` equal to `uv.lock`; `--check` runs in CI.
+- `Dependency refresh` workflow — one weekly pull request with every in-range
+  upgrade, with the SBOM and notices regenerated.
+- `Dependabot fixup` workflow — regenerates the SBOM and notices on
+  Dependabot pull requests that change the lock.
+
+### Fixed
+
+- `THIRD_PARTY_NOTICES.md` listed pyjwt 2.13.0; the lock has 2.15.1.
+
 ## [0.4.0] — Google Chat API catch-up
 
 Covers the Google Chat API release notes through 2026-11-04.

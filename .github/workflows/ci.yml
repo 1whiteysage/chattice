@@ -4,6 +4,13 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Lets automation that cannot trigger `pull_request` runs (pull requests
+  # opened with GITHUB_TOKEN) request the same checks for its branch.
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -11,6 +18,7 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -23,6 +31,7 @@ jobs:
           enable-cache: true
       - run: uv sync --all-groups --locked
       - run: uv run python scripts/gen_sbom.py --check
+      - run: uv run python scripts/sync_notices.py --check
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest --cov=chattice --cov-report=term-missing
@@ -47,6 +56,7 @@ jobs:
 
   docs:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1

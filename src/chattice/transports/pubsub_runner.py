@@ -50,6 +50,7 @@ import signal
 import time
 from collections.abc import Mapping
 from concurrent.futures import Future
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any, Protocol
 
@@ -198,6 +199,34 @@ class _OutboundBot(Protocol):
 
     @property
     def app(self) -> _OutboundNamespace: ...
+
+
+@dataclass(slots=True)
+class _Attempt:
+    """One delivery attempt: the message, its claim, and the parsed event."""
+
+    message: Any
+    key: str
+    owner: str
+    # Set once the payload parsed; failure reporting works without it.
+    event: Event | None = None
+
+
+def _clicked_message(event: Event) -> str | None:
+    """Name of the message whose card was clicked, when the event has one."""
+    if isinstance(event, ActionEvent) and event.message is not None:
+        return event.message.name
+    return None
+
+
+def _answer_mode(event: Event, result: object) -> str:
+    """How a handler result is delivered over the ack-only Pub/Sub channel."""
+    if isinstance(result, str):
+        return "send_message"
+    if isinstance(result, Card):
+        clicked = _clicked_message(event) is not None
+        return "update_message" if clicked else "send_message"
+    return "unsupported"
 
 
 class PubSubPullRunner:
@@ -366,8 +395,31 @@ class PubSubPullRunner:
         """
         # Namespaced key: Google message IDs are unique per TOPIC, so a
         # shared store needs the subscription in the key (push parity).
-        key = f"{self._subscription}:{message.message_id}"
-        owner = new_owner()
+        attempt = _Attempt(
+            message=message,
+            key=f"{self._subscription}:{message.message_id}",
+            owner=new_owner(),
+        )
+        if not await self._claim(attempt):
+            return
+        renewal: asyncio.Task[None] | None = None
+        try:
+            renewal = asyncio.create_task(
+                self._renew_loop(attempt.key, attempt.owner, message)
+            )
+            await self._process(attempt)
+        except asyncio.CancelledError:
+            message.nack()
+            raise
+        except Exception as error:
+            await self._fail(attempt, error)
+        finally:
+            if renewal is not None:
+                await self._stop_renewal(renewal, message)
+
+    async def _claim(self, attempt: _Attempt) -> bool:
+        """Claim the delivery; False when it was settled without processing."""
+        message = attempt.message
         logger.debug(
             "claim_started: message_id=%s attempt=%s",
             message.message_id,
@@ -375,7 +427,7 @@ class PubSubPullRunner:
         )
         try:
             claim = await self._idempotency.claim(
-                key, owner=owner, lease_seconds=_DEFAULT_LEASE_SECONDS
+                attempt.key, owner=attempt.owner, lease_seconds=_DEFAULT_LEASE_SECONDS
             )
         except Exception as error:
             # Storage unavailable: NACK so Pub/Sub redelivers later — never
@@ -388,7 +440,7 @@ class PubSubPullRunner:
                 exc_info=logger.isEnabledFor(logging.DEBUG) or None,
             )
             message.nack()
-            return
+            return False
         logger.debug(
             "claim_result=%s: message_id=%s attempt=%s",
             claim.name.lower(),
@@ -401,7 +453,7 @@ class PubSubPullRunner:
                 message.message_id,
             )
             message.ack()
-            return
+            return False
         if claim is ClaimResult.ACTIVE:
             # Another owner is processing: hand the delivery back.
             logger.warning(
@@ -409,165 +461,169 @@ class PubSubPullRunner:
                 message.message_id,
             )
             message.nack()
-            return
-        renewal: asyncio.Task[None] | None = None
-        event: Event | None = None
+            return False
+        return True
+
+    async def _process(self, attempt: _Attempt) -> None:
+        """Parse, dispatch, answer, then complete the claim and ACK."""
+        message = attempt.message
         delivery_started = time.perf_counter()
-        handler_duration_ms = 0.0
-        outbound_operation: str | None = None
-        outbound_duration_ms = 0.0
+        event = attempt.event = self._parse(message)
+        logger.debug(
+            "parsed: %s message_id=%s",
+            _event_context(event),
+            message.message_id,
+        )
+        self._log_delivery_received(message, event)
+        capabilities = ResponseCapabilities.resolve(transport="pubsub", event=event)
+        result = await self._dispatcher.feed_update(
+            event,
+            bot=self._bot,
+            capabilities=capabilities,
+        )
+        handler_duration_ms = (time.perf_counter() - delivery_started) * 1000
+        outbound_started = time.perf_counter()
         try:
-            renewal = asyncio.create_task(self._renew_loop(key, owner, message))
-            event = self._parse(message)
-            logger.debug(
-                "parsed: %s message_id=%s",
-                _event_context(event),
-                message.message_id,
-            )
-            self._log_delivery_received(message, event)
-            capabilities = ResponseCapabilities.resolve(transport="pubsub", event=event)
-            result = await self._dispatcher.feed_update(
-                event,
-                bot=self._bot,
-                capabilities=capabilities,
-            )
-            handler_duration_ms = (time.perf_counter() - delivery_started) * 1000
-            outbound_started = time.perf_counter()
-            try:
-                outbound_operation = await self._answer(event, result)
-            except CapabilityNotSupported as error:
-                # Terminal for this delivery: tell the space, complete
-                # the claim, THEN ack (completion failure would otherwise
-                # leave an acked-but-unrecorded delivery).
-                logger.error(
-                    "capability rejected: message_id=%s attempt=%s %s error=%s",
-                    message.message_id,
-                    _delivery_attempt(message),
-                    _event_context(event),
-                    str(error),
-                    exc_info=logger.isEnabledFor(logging.DEBUG) or None,
-                )
-                space_name = event.space.name if event.space is not None else None
-                if self._bot is not None and space_name is not None:
-                    await self._bot.app.messages.create(space_name, text=str(error))
-                logger.debug(
-                    "complete_started: message_id=%s attempt=%s",
-                    message.message_id,
-                    _delivery_attempt(message),
-                )
-                await self._idempotency.complete(key, owner=owner)
-                logger.debug(
-                    "complete_succeeded: message_id=%s attempt=%s",
-                    message.message_id,
-                    _delivery_attempt(message),
-                )
-                message.ack()
-                return
-            # Success: complete the claim FIRST, then ACK exactly once. If
-            # complete fails, the attempt falls into the exception branch
-            # below — release + NACK — preserving at-least-once semantics.
-            outbound_duration_ms = (time.perf_counter() - outbound_started) * 1000
-            logger.debug(
-                "complete_started: message_id=%s attempt=%s",
+            outbound_operation = await self._answer(event, result)
+        except CapabilityNotSupported as error:
+            await self._reject_capability(attempt, event, error)
+            return
+        # Success: complete the claim FIRST, then ACK exactly once. If
+        # complete fails, the attempt falls into the failure path —
+        # release + NACK — preserving at-least-once semantics.
+        outbound_duration_ms = (time.perf_counter() - outbound_started) * 1000
+        await self._complete(attempt)
+        message.ack()
+        await _maybe_hook(
+            self._observability_hooks,
+            "delivery_acked",
+            message.message_id,
+            event,
+        )
+        logger.info(
+            "acked: message_id=%s event_type=%s handler_duration_ms=%.1f "
+            "outbound_operation=%s outbound_duration_ms=%.1f "
+            "total_duration_ms=%.1f",
+            message.message_id,
+            event.event_type,
+            handler_duration_ms,
+            outbound_operation or "none",
+            outbound_duration_ms,
+            (time.perf_counter() - delivery_started) * 1000,
+        )
+
+    async def _reject_capability(
+        self, attempt: _Attempt, event: Event, error: CapabilityNotSupported
+    ) -> None:
+        """Terminal for this delivery: tell the space, complete, THEN ack.
+
+        A completion failure would otherwise leave an acked-but-unrecorded
+        delivery.
+        """
+        message = attempt.message
+        logger.error(
+            "capability rejected: message_id=%s attempt=%s %s error=%s",
+            message.message_id,
+            _delivery_attempt(message),
+            _event_context(event),
+            str(error),
+            exc_info=logger.isEnabledFor(logging.DEBUG) or None,
+        )
+        space_name = event.space.name if event.space is not None else None
+        if self._bot is not None and space_name is not None:
+            await self._bot.app.messages.create(space_name, text=str(error))
+        await self._complete(attempt)
+        message.ack()
+
+    async def _complete(self, attempt: _Attempt) -> None:
+        message = attempt.message
+        logger.debug(
+            "complete_started: message_id=%s attempt=%s",
+            message.message_id,
+            _delivery_attempt(message),
+        )
+        await self._idempotency.complete(attempt.key, owner=attempt.owner)
+        logger.debug(
+            "complete_succeeded: message_id=%s attempt=%s",
+            message.message_id,
+            _delivery_attempt(message),
+        )
+
+    async def _fail(self, attempt: _Attempt, error: Exception) -> None:
+        """Release the claim, then NACK — or poison-ACK at the attempt limit."""
+        message = attempt.message
+        await self._release(attempt)
+        if message.delivery_attempt >= self._max_delivery_attempts:
+            # Documented terminal policy: notify first (best-effort),
+            # then poison-ACK so the message cannot redeliver forever.
+            await self._notify_poison(attempt.event, type(error).__name__)
+            logger.error(
+                "poison message acked: message_id=%s attempt=%s %s exception_type=%s",
                 message.message_id,
                 _delivery_attempt(message),
-            )
-            await self._idempotency.complete(key, owner=owner)
-            logger.debug(
-                "complete_succeeded: message_id=%s attempt=%s",
-                message.message_id,
-                _delivery_attempt(message),
+                _event_context(attempt.event),
+                type(error).__name__,
+                exc_info=logger.isEnabledFor(logging.DEBUG) or None,
             )
             message.ack()
-            await _maybe_hook(
-                self._observability_hooks,
-                "delivery_acked",
-                message.message_id,
-                event,
-            )
-            logger.info(
-                "acked: message_id=%s event_type=%s handler_duration_ms=%.1f "
-                "outbound_operation=%s outbound_duration_ms=%.1f "
-                "total_duration_ms=%.1f",
-                message.message_id,
-                event.event_type,
-                handler_duration_ms,
-                outbound_operation or "none",
-                outbound_duration_ms,
-                (time.perf_counter() - delivery_started) * 1000,
-            )
-        except asyncio.CancelledError:
-            message.nack()
-            raise
-        except Exception as error:
-            logger.debug(
-                "release_started: message_id=%s attempt=%s",
+            return
+        # Exception CLASS only — never the message: it may contain
+        # secrets (form values, tokens, user text).
+        logger.error(
+            "delivery failed, nacked: message_id=%s attempt=%s %s exception_type=%s",
+            message.message_id,
+            _delivery_attempt(message),
+            _event_context(attempt.event),
+            type(error).__name__,
+            exc_info=logger.isEnabledFor(logging.DEBUG) or None,
+        )
+        message.nack()
+        await _maybe_hook(
+            self._observability_hooks,
+            "delivery_nacked",
+            message.message_id,
+            attempt.event,
+        )
+
+    async def _release(self, attempt: _Attempt) -> None:
+        """Owner-checked release; a failure is logged, never raised."""
+        message = attempt.message
+        logger.debug(
+            "release_started: message_id=%s attempt=%s",
+            message.message_id,
+            _delivery_attempt(message),
+        )
+        try:
+            await self._idempotency.release(attempt.key, owner=attempt.owner)
+        except Exception as release_error:
+            logger.error(
+                "release failed: message_id=%s attempt=%s error=%s",
                 message.message_id,
                 _delivery_attempt(message),
+                str(release_error),
+                exc_info=logger.isEnabledFor(logging.DEBUG) or None,
             )
-            try:
-                await self._idempotency.release(key, owner=owner)
-            except Exception as release_error:
-                logger.error(
-                    "release failed: message_id=%s attempt=%s error=%s",
-                    message.message_id,
-                    _delivery_attempt(message),
-                    str(release_error),
-                    exc_info=logger.isEnabledFor(logging.DEBUG) or None,
-                )
-            else:
-                logger.debug(
-                    "release_succeeded: message_id=%s attempt=%s",
-                    message.message_id,
-                    _delivery_attempt(message),
-                )
-            if message.delivery_attempt >= self._max_delivery_attempts:
-                # Documented terminal policy: notify first (best-effort),
-                # then poison-ACK so the message cannot redeliver forever.
-                await self._notify_poison(event, type(error).__name__)
-                logger.error(
-                    "poison message acked: message_id=%s attempt=%s %s "
-                    "exception_type=%s",
-                    message.message_id,
-                    _delivery_attempt(message),
-                    _event_context(event),
-                    type(error).__name__,
-                    exc_info=logger.isEnabledFor(logging.DEBUG) or None,
-                )
-                message.ack()
-            else:
-                # Exception CLASS only — never the message: it may contain
-                # secrets (form values, tokens, user text).
-                logger.error(
-                    "delivery failed, nacked: message_id=%s attempt=%s %s "
-                    "exception_type=%s",
-                    message.message_id,
-                    _delivery_attempt(message),
-                    _event_context(event),
-                    type(error).__name__,
-                    exc_info=logger.isEnabledFor(logging.DEBUG) or None,
-                )
-                message.nack()
-                await _maybe_hook(
-                    self._observability_hooks,
-                    "delivery_nacked",
-                    message.message_id,
-                    event,
-                )
-        finally:
-            if renewal is not None:
-                renewal.cancel()
-                try:
-                    await renewal
-                except asyncio.CancelledError:
-                    pass
-                except Exception as renew_error:
-                    logger.exception(
-                        "renewal task failed: message_id=%s attempt=%s error=%s",
-                        message.message_id,
-                        _delivery_attempt(message),
-                        str(renew_error),
-                    )
+            return
+        logger.debug(
+            "release_succeeded: message_id=%s attempt=%s",
+            message.message_id,
+            _delivery_attempt(message),
+        )
+
+    @staticmethod
+    async def _stop_renewal(renewal: asyncio.Task[None], message: Any) -> None:
+        renewal.cancel()
+        try:
+            await renewal
+        except asyncio.CancelledError:
+            pass
+        except Exception as renew_error:
+            logger.exception(
+                "renewal task failed: message_id=%s attempt=%s error=%s",
+                message.message_id,
+                _delivery_attempt(message),
+                str(renew_error),
+            )
 
     async def _renew_loop(self, key: str, owner: str, message: Any) -> None:
         """Renew the claim lease while the attempt is in flight.
@@ -720,31 +776,15 @@ class PubSubPullRunner:
         """Send the handler answer outbound; return the operation mode used."""
         if result is None:
             return None
-        if isinstance(result, (Dialog, ActionStatus)):
-            logger.debug(
-                "answer_started: %s result_type=%s mode=unsupported",
-                _event_context(event),
-                type(result).__name__,
-            )
-            raise CapabilityNotSupported(DIALOG_UNSUPPORTED_MESSAGE)
-        if isinstance(result, str):
-            mode = "send_message"
-        elif isinstance(result, Card):
-            mode = (
-                "update_message"
-                if isinstance(event, ActionEvent)
-                and event.message is not None
-                and event.message.name is not None
-                else "send_message"
-            )
-        else:
-            mode = "unsupported"
+        mode = _answer_mode(event, result)
         logger.debug(
             "answer_started: %s result_type=%s mode=%s",
             _event_context(event),
             type(result).__name__,
             mode,
         )
+        if isinstance(result, (Dialog, ActionStatus)):
+            raise CapabilityNotSupported(DIALOG_UNSUPPORTED_MESSAGE)
         if self._bot is None:
             logger.warning(
                 "handler answer dropped: no Bot configured: event_type=%s "
@@ -760,55 +800,14 @@ class PubSubPullRunner:
                 event.event_type,
             )
             return None
-        thread = event.thread.name if event.thread is not None else None
         if isinstance(result, str):
-            await _maybe_hook(
-                self._observability_hooks, "before_outbound", event, "send_message"
-            )
-            try:
-                await self._bot.app.messages.create(
-                    space,
-                    text=result,
-                    thread=ThreadRef(name=thread) if thread else None,
-                )
-            except Exception as exc:
-                _log_outbound_failure(exc, "outbound_send_message", event)
-                raise
-            logger.info("text sent: space=%s %s", space, _event_context(event))
+            await self._send_text(self._bot, event, space, result)
         elif isinstance(result, Card):
-            if (
-                isinstance(event, ActionEvent)
-                and event.message is not None
-                and event.message.name is not None
-            ):
-                message_name = event.message.name
-                await self._update_locks.acquire(message_name)
-                try:
-                    try:
-                        await self._bot.app.messages.update(message_name, card=result)
-                    except Exception as exc:
-                        _log_outbound_failure(exc, "outbound_update_message", event)
-                        raise
-                finally:
-                    self._update_locks.release(message_name)
-                logger.info(
-                    "card updated: message=%s %s",
-                    event.message.name,
-                    _event_context(event),
-                )
+            message_name = _clicked_message(event)
+            if message_name is not None:
+                await self._update_card(self._bot, event, message_name, result)
             else:
-                await _maybe_hook(
-                    self._observability_hooks,
-                    "before_outbound",
-                    event,
-                    "send_message",
-                )
-                try:
-                    await self._bot.app.messages.create(space, card=result)
-                except Exception as exc:
-                    _log_outbound_failure(exc, "outbound_send_message", event)
-                    raise
-                logger.info("card sent: space=%s %s", space, _event_context(event))
+                await self._send_card(self._bot, event, space, result)
         else:
             logger.warning(
                 "handler answer type unsupported in Pub/Sub: event_type=%s "
@@ -820,3 +819,49 @@ class PubSubPullRunner:
         await _maybe_hook(self._observability_hooks, "after_outbound", event, mode)
         logger.debug("answer_completed: %s mode=%s", _event_context(event), mode)
         return mode
+
+    async def _send_text(
+        self, bot: _OutboundBot, event: Event, space: str, text: str
+    ) -> None:
+        thread = event.thread.name if event.thread is not None else None
+        await _maybe_hook(
+            self._observability_hooks, "before_outbound", event, "send_message"
+        )
+        try:
+            await bot.app.messages.create(
+                space,
+                text=text,
+                thread=ThreadRef(name=thread) if thread else None,
+            )
+        except Exception as exc:
+            _log_outbound_failure(exc, "outbound_send_message", event)
+            raise
+        logger.info("text sent: space=%s %s", space, _event_context(event))
+
+    async def _send_card(
+        self, bot: _OutboundBot, event: Event, space: str, card: Card
+    ) -> None:
+        await _maybe_hook(
+            self._observability_hooks, "before_outbound", event, "send_message"
+        )
+        try:
+            await bot.app.messages.create(space, card=card)
+        except Exception as exc:
+            _log_outbound_failure(exc, "outbound_send_message", event)
+            raise
+        logger.info("card sent: space=%s %s", space, _event_context(event))
+
+    async def _update_card(
+        self, bot: _OutboundBot, event: Event, message_name: str, card: Card
+    ) -> None:
+        """Update the clicked message; updates of one message are serialized."""
+        await self._update_locks.acquire(message_name)
+        try:
+            try:
+                await bot.app.messages.update(message_name, card=card)
+            except Exception as exc:
+                _log_outbound_failure(exc, "outbound_update_message", event)
+                raise
+        finally:
+            self._update_locks.release(message_name)
+        logger.info("card updated: message=%s %s", message_name, _event_context(event))
