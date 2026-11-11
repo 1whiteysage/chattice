@@ -1,6 +1,6 @@
 # Public API Reference
 
-Public API snapshot for Chattice 0.4.0.
+Public API snapshot for Chattice 0.4.1.
 
 ## Convention
 
