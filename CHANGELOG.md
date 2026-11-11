@@ -4,7 +4,7 @@ All notable changes are documented here. Versions follow Python packaging
 conventions. Before 1.0, incompatible changes may be released in a minor
 version and will include upgrade notes.
 
-## [Unreleased]
+## [0.4.1] — Code health and maintenance tooling
 
 No change to the public API or to runtime behavior.
 

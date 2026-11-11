@@ -104,7 +104,7 @@ def prepare(root: Path, version: str, title: str) -> list[str]:
 
 
 def _run(*command: str) -> None:
-    print("$", " ".join(command))
+    print("$", " ".join(command), flush=True)
     subprocess.run(command, cwd=_ROOT, check=True)
 
 

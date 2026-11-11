@@ -4,7 +4,7 @@ Verified at release time.
 
 | Input | Compatible snapshot |
 | --- | --- |
-| Chattice | 0.4.0 |
+| Chattice | 0.4.1 |
 | Python | 3.11, 3.12, 3.13, 3.14 |
 | `google-apps-chat` | `>=0.10.9,<1.0.0` (latest checked: 0.10.9) |
 | Google Chat REST API | v1 |
