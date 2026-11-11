@@ -3,7 +3,7 @@
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
   "name": "chattice-0.4.0-sbom",
-  "documentNamespace": "https://spdx.org/spdxdocs/chattice-0.4.0-bfc722bd-89b9-575c-b9b4-36cb6d6c1e17",
+  "documentNamespace": "https://spdx.org/spdxdocs/chattice-0.4.0-3c94514f-ba2e-5442-9e27-136411022d8d",
   "creationInfo": {
     "created": "1970-01-01T00:00:00Z",
     "creators": [
@@ -35,6 +35,16 @@
       "SPDXID": "SPDXRef-Package-anyio",
       "name": "anyio",
       "versionInfo": "4.14.2",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-ast-serialize",
+      "name": "ast-serialize",
+      "versionInfo": "0.13.1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -164,7 +174,7 @@
     {
       "SPDXID": "SPDXRef-Package-cryptography",
       "name": "cryptography",
-      "versionInfo": "50.0.0",
+      "versionInfo": "50.0.2",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -204,7 +214,7 @@
     {
       "SPDXID": "SPDXRef-Package-fakeredis",
       "name": "fakeredis",
-      "versionInfo": "2.37.0",
+      "versionInfo": "2.40.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -214,7 +224,7 @@
     {
       "SPDXID": "SPDXRef-Package-fastapi",
       "name": "fastapi",
-      "versionInfo": "0.141.1",
+      "versionInfo": "0.162.2",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -514,7 +524,7 @@
     {
       "SPDXID": "SPDXRef-Package-librt",
       "name": "librt",
-      "versionInfo": "0.15.0",
+      "versionInfo": "0.16.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -614,7 +624,7 @@
     {
       "SPDXID": "SPDXRef-Package-mkdocs-material",
       "name": "mkdocs-material",
-      "versionInfo": "9.7.7",
+      "versionInfo": "9.8.1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -664,7 +674,7 @@
     {
       "SPDXID": "SPDXRef-Package-mypy",
       "name": "mypy",
-      "versionInfo": "1.20.2",
+      "versionInfo": "2.4.1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -874,7 +884,7 @@
     {
       "SPDXID": "SPDXRef-Package-pydantic",
       "name": "pydantic",
-      "versionInfo": "2.13.4",
+      "versionInfo": "2.14.3",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -884,7 +894,7 @@
     {
       "SPDXID": "SPDXRef-Package-pydantic-core",
       "name": "pydantic-core",
-      "versionInfo": "2.46.4",
+      "versionInfo": "2.50.4",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -934,7 +944,7 @@
     {
       "SPDXID": "SPDXRef-Package-pytest",
       "name": "pytest",
-      "versionInfo": "9.1.1",
+      "versionInfo": "9.2.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -944,7 +954,7 @@
     {
       "SPDXID": "SPDXRef-Package-pytest-asyncio",
       "name": "pytest-asyncio",
-      "versionInfo": "1.4.0",
+      "versionInfo": "1.4.1.post1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -994,7 +1004,7 @@
     {
       "SPDXID": "SPDXRef-Package-redis",
       "name": "redis",
-      "versionInfo": "6.4.0",
+      "versionInfo": "8.1.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -1024,7 +1034,7 @@
     {
       "SPDXID": "SPDXRef-Package-ruff",
       "name": "ruff",
-      "versionInfo": "0.16.3",
+      "versionInfo": "0.17.4",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -1154,7 +1164,7 @@
     {
       "SPDXID": "SPDXRef-Package-uvicorn",
       "name": "uvicorn",
-      "versionInfo": "0.52.3",
+      "versionInfo": "0.54.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -1196,6 +1206,11 @@
     {
       "spdxElementId": "SPDXRef-DOCUMENT",
       "relatedSpdxElement": "SPDXRef-Package-anyio",
+      "relationshipType": "DESCRIBES"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Package-ast-serialize",
       "relationshipType": "DESCRIBES"
     },
     {
