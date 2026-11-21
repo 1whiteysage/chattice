@@ -23,10 +23,10 @@ GPL/AGPL/SSPL dependency is declared.
 | --- | --- | --- | --- |
 | [fastapi](https://github.com/fastapi/fastapi) | 0.141.1 | MIT | `fastapi` |
 | [redis](https://github.com/redis/redis-py) | 6.4.0 | MIT | `redis` |
-| [google-genai](https://github.com/googleapis/python-genai) | 3.1.0 | Apache-2.0 | `gemini` |
-| [google-cloud-pubsub](https://github.com/googleapis/python-pubsub) | 2.43.0 | Apache-2.0 | `pubsub` |
-| [google-api-python-client](https://github.com/googleapis/google-api-python-client) | 2.199.0 | Apache-2.0 | `media` |
-| [google-cloud-storage](https://github.com/googleapis/python-storage) | 3.13.1 | Apache-2.0 | `gcs` |
+| [google-genai](https://github.com/googleapis/python-genai) | 3.5.0 | Apache-2.0 | `gemini` |
+| [google-cloud-pubsub](https://github.com/googleapis/python-pubsub) | 2.44.0 | Apache-2.0 | `pubsub` |
+| [google-api-python-client](https://github.com/googleapis/google-api-python-client) | 2.202.0 | Apache-2.0 | `media` |
+| [google-cloud-storage](https://github.com/googleapis/python-storage) | 3.17.1 | Apache-2.0 | `gcs` |
 
 ## Development, documentation and build dependencies
 
