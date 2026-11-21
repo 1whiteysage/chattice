@@ -3,7 +3,7 @@
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
   "name": "chattice-0.4.1-sbom",
-  "documentNamespace": "https://spdx.org/spdxdocs/chattice-0.4.1-2b8f2589-e1b8-5eec-b886-bcbaeb6e1c9c",
+  "documentNamespace": "https://spdx.org/spdxdocs/chattice-0.4.1-625b5700-441b-56f1-ae10-bc2a690a47af",
   "creationInfo": {
     "created": "1970-01-01T00:00:00Z",
     "creators": [
@@ -254,7 +254,7 @@
     {
       "SPDXID": "SPDXRef-Package-google-api-python-client",
       "name": "google-api-python-client",
-      "versionInfo": "2.199.0",
+      "versionInfo": "2.202.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -314,7 +314,7 @@
     {
       "SPDXID": "SPDXRef-Package-google-cloud-pubsub",
       "name": "google-cloud-pubsub",
-      "versionInfo": "2.43.0",
+      "versionInfo": "2.44.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -324,7 +324,7 @@
     {
       "SPDXID": "SPDXRef-Package-google-cloud-storage",
       "name": "google-cloud-storage",
-      "versionInfo": "3.13.1",
+      "versionInfo": "3.17.1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -344,7 +344,7 @@
     {
       "SPDXID": "SPDXRef-Package-google-genai",
       "name": "google-genai",
-      "versionInfo": "3.1.0",
+      "versionInfo": "3.5.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
