@@ -14,37 +14,37 @@ GPL/AGPL/SSPL dependency is declared.
 | Package | Version | License |
 | --- | --- | --- |
 | [google-apps-chat](https://github.com/googleapis/google-cloud-python/tree/main/packages/google-apps-chat) | 0.10.9 | Apache-2.0 |
-| [google-auth](https://github.com/googleapis/google-auth-library-python) | 2.62.2 | Apache-2.0 |
-| [pydantic](https://github.com/pydantic/pydantic) | 2.13.4 | MIT |
+| [google-auth](https://github.com/googleapis/google-auth-library-python) | 2.63.1 | Apache-2.0 |
+| [pydantic](https://github.com/pydantic/pydantic) | 2.14.4 | MIT |
 
 ## Optional extras
 
 | Package | Version | License | Extra |
 | --- | --- | --- | --- |
-| [fastapi](https://github.com/fastapi/fastapi) | 0.141.1 | MIT | `fastapi` |
+| [fastapi](https://github.com/fastapi/fastapi) | 0.165.0 | MIT | `fastapi` |
 | [redis](https://github.com/redis/redis-py) | 6.4.0 | MIT | `redis` |
-| [google-genai](https://github.com/googleapis/python-genai) | 3.1.0 | Apache-2.0 | `gemini` |
-| [google-cloud-pubsub](https://github.com/googleapis/python-pubsub) | 2.43.0 | Apache-2.0 | `pubsub` |
-| [google-api-python-client](https://github.com/googleapis/google-api-python-client) | 2.199.0 | Apache-2.0 | `media` |
-| [google-cloud-storage](https://github.com/googleapis/python-storage) | 3.13.1 | Apache-2.0 | `gcs` |
+| [google-genai](https://github.com/googleapis/python-genai) | 3.6.1 | Apache-2.0 | `gemini` |
+| [google-cloud-pubsub](https://github.com/googleapis/python-pubsub) | 2.44.0 | Apache-2.0 | `pubsub` |
+| [google-api-python-client](https://github.com/googleapis/google-api-python-client) | 2.202.0 | Apache-2.0 | `media` |
+| [google-cloud-storage](https://github.com/googleapis/python-storage) | 3.17.1 | Apache-2.0 | `gcs` |
 
 ## Development, documentation and build dependencies
 
 | Package | Version | License |
 | --- | --- | --- |
-| [cryptography](https://github.com/pyca/cryptography) | 50.0.0 | Apache-2.0 OR BSD-3-Clause |
-| [fakeredis](https://github.com/cunla/fakeredis-py) | 2.37.0 | BSD-3-Clause |
+| [cryptography](https://github.com/pyca/cryptography) | 50.0.2 | Apache-2.0 OR BSD-3-Clause |
+| [fakeredis](https://github.com/cunla/fakeredis-py) | 2.41.0 | BSD-3-Clause |
 | [httpx](https://github.com/encode/httpx) | 0.28.1 | BSD-3-Clause |
 | [mkdocs](https://github.com/mkdocs/mkdocs) | 1.6.1 | BSD-2-Clause |
-| [mkdocs-material](https://github.com/squidfunk/mkdocs-material) | 9.7.7 | MIT |
-| [mkdocstrings[python]](https://github.com/mkdocstrings/mkdocstrings) | 1.0.6 | ISC |
+| [mkdocs-material](https://github.com/squidfunk/mkdocs-material) | 9.8.2 | MIT |
+| [mkdocstrings[python]](https://github.com/mkdocstrings/mkdocstrings) | 1.0.8 | ISC |
 | [mypy](https://github.com/python/mypy) | 1.20.2 | MIT (with identified PSF-licensed portions) |
 | [pyjwt](https://github.com/jpadilla/pyjwt) | 2.15.1 | MIT |
-| [pytest](https://github.com/pytest-dev/pytest) | 9.1.1 | MIT |
-| [pytest-asyncio](https://github.com/pytest-dev/pytest-asyncio) | 1.4.0 | Apache-2.0 |
+| [pytest](https://github.com/pytest-dev/pytest) | 9.2.0 | MIT |
+| [pytest-asyncio](https://github.com/pytest-dev/pytest-asyncio) | 1.5.0 | Apache-2.0 |
 | [pytest-cov](https://github.com/pytest-dev/pytest-cov) | 7.1.0 | MIT |
-| [ruff](https://github.com/astral-sh/ruff) | 0.16.3 | MIT |
-| [uvicorn](https://github.com/encode/uvicorn) | 0.52.3 | BSD-3-Clause |
+| [ruff](https://github.com/astral-sh/ruff) | 0.17.6 | MIT |
+| [uvicorn](https://github.com/encode/uvicorn) | 0.54.0 | BSD-3-Clause |
 | [hatchling](https://github.com/pypa/hatch) | >=1.27 (build backend) | MIT |
 
 ## What is and is not distributed

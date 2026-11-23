@@ -3,7 +3,7 @@
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
   "name": "chattice-0.4.1-sbom",
-  "documentNamespace": "https://spdx.org/spdxdocs/chattice-0.4.1-2b8f2589-e1b8-5eec-b886-bcbaeb6e1c9c",
+  "documentNamespace": "https://spdx.org/spdxdocs/chattice-0.4.1-89877bed-30d1-5952-abe0-bb225ddbed5c",
   "creationInfo": {
     "created": "1970-01-01T00:00:00Z",
     "creators": [
@@ -14,7 +14,7 @@
     {
       "SPDXID": "SPDXRef-Package-annotated-doc",
       "name": "annotated-doc",
-      "versionInfo": "0.0.5",
+      "versionInfo": "0.0.7",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -34,7 +34,7 @@
     {
       "SPDXID": "SPDXRef-Package-anyio",
       "name": "anyio",
-      "versionInfo": "4.14.2",
+      "versionInfo": "4.16.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -64,7 +64,7 @@
     {
       "SPDXID": "SPDXRef-Package-backrefs",
       "name": "backrefs",
-      "versionInfo": "8.0",
+      "versionInfo": "8.3.1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -84,7 +84,7 @@
     {
       "SPDXID": "SPDXRef-Package-cachecontrol",
       "name": "cachecontrol",
-      "versionInfo": "0.14.4",
+      "versionInfo": "0.15.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -94,7 +94,7 @@
     {
       "SPDXID": "SPDXRef-Package-certifi",
       "name": "certifi",
-      "versionInfo": "2026.10.23",
+      "versionInfo": "2026.11.20",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -114,7 +114,7 @@
     {
       "SPDXID": "SPDXRef-Package-charset-normalizer",
       "name": "charset-normalizer",
-      "versionInfo": "3.5.0",
+      "versionInfo": "3.5.3",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -134,7 +134,7 @@
     {
       "SPDXID": "SPDXRef-Package-click",
       "name": "click",
-      "versionInfo": "8.4.2",
+      "versionInfo": "8.5.1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -154,7 +154,7 @@
     {
       "SPDXID": "SPDXRef-Package-coverage",
       "name": "coverage",
-      "versionInfo": "7.15.4",
+      "versionInfo": "7.17.5",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -164,7 +164,7 @@
     {
       "SPDXID": "SPDXRef-Package-cryptography",
       "name": "cryptography",
-      "versionInfo": "50.0.0",
+      "versionInfo": "50.0.2",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -204,7 +204,7 @@
     {
       "SPDXID": "SPDXRef-Package-fakeredis",
       "name": "fakeredis",
-      "versionInfo": "2.37.0",
+      "versionInfo": "2.41.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -214,7 +214,7 @@
     {
       "SPDXID": "SPDXRef-Package-fastapi",
       "name": "fastapi",
-      "versionInfo": "0.141.1",
+      "versionInfo": "0.165.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -224,7 +224,7 @@
     {
       "SPDXID": "SPDXRef-Package-filelock",
       "name": "filelock",
-      "versionInfo": "4.2.10",
+      "versionInfo": "4.3.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -244,7 +244,7 @@
     {
       "SPDXID": "SPDXRef-Package-google-api-core",
       "name": "google-api-core",
-      "versionInfo": "2.34.0",
+      "versionInfo": "2.44.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -254,7 +254,7 @@
     {
       "SPDXID": "SPDXRef-Package-google-api-python-client",
       "name": "google-api-python-client",
-      "versionInfo": "2.199.0",
+      "versionInfo": "2.202.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -284,7 +284,7 @@
     {
       "SPDXID": "SPDXRef-Package-google-auth",
       "name": "google-auth",
-      "versionInfo": "2.62.2",
+      "versionInfo": "2.63.1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -294,7 +294,7 @@
     {
       "SPDXID": "SPDXRef-Package-google-auth-httplib2",
       "name": "google-auth-httplib2",
-      "versionInfo": "0.4.1",
+      "versionInfo": "0.4.4",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -304,7 +304,7 @@
     {
       "SPDXID": "SPDXRef-Package-google-cloud-core",
       "name": "google-cloud-core",
-      "versionInfo": "2.7.0",
+      "versionInfo": "2.8.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -314,7 +314,7 @@
     {
       "SPDXID": "SPDXRef-Package-google-cloud-pubsub",
       "name": "google-cloud-pubsub",
-      "versionInfo": "2.43.0",
+      "versionInfo": "2.44.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -324,7 +324,7 @@
     {
       "SPDXID": "SPDXRef-Package-google-cloud-storage",
       "name": "google-cloud-storage",
-      "versionInfo": "3.13.1",
+      "versionInfo": "3.17.1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -334,7 +334,7 @@
     {
       "SPDXID": "SPDXRef-Package-google-crc32c",
       "name": "google-crc32c",
-      "versionInfo": "1.8.0",
+      "versionInfo": "1.9.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -344,7 +344,7 @@
     {
       "SPDXID": "SPDXRef-Package-google-genai",
       "name": "google-genai",
-      "versionInfo": "3.1.0",
+      "versionInfo": "3.6.1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -354,7 +354,7 @@
     {
       "SPDXID": "SPDXRef-Package-google-resumable-media",
       "name": "google-resumable-media",
-      "versionInfo": "2.10.2",
+      "versionInfo": "2.11.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -364,7 +364,7 @@
     {
       "SPDXID": "SPDXRef-Package-googleapis-common-protos",
       "name": "googleapis-common-protos",
-      "versionInfo": "1.75.1",
+      "versionInfo": "1.76.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -374,7 +374,7 @@
     {
       "SPDXID": "SPDXRef-Package-griffelib",
       "name": "griffelib",
-      "versionInfo": "2.1.0",
+      "versionInfo": "2.4.1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -384,7 +384,7 @@
     {
       "SPDXID": "SPDXRef-Package-grpc-google-iam-v1",
       "name": "grpc-google-iam-v1",
-      "versionInfo": "0.14.5",
+      "versionInfo": "0.14.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -394,7 +394,7 @@
     {
       "SPDXID": "SPDXRef-Package-grpcio",
       "name": "grpcio",
-      "versionInfo": "1.83.0",
+      "versionInfo": "1.85.3",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -404,7 +404,7 @@
     {
       "SPDXID": "SPDXRef-Package-grpcio-status",
       "name": "grpcio-status",
-      "versionInfo": "1.83.0",
+      "versionInfo": "1.85.3",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -434,7 +434,7 @@
     {
       "SPDXID": "SPDXRef-Package-httpcore2",
       "name": "httpcore2",
-      "versionInfo": "2.16.0",
+      "versionInfo": "2.16.2",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -444,7 +444,7 @@
     {
       "SPDXID": "SPDXRef-Package-httplib2",
       "name": "httplib2",
-      "versionInfo": "0.32.0",
+      "versionInfo": "0.32.1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -464,7 +464,7 @@
     {
       "SPDXID": "SPDXRef-Package-httpx2",
       "name": "httpx2",
-      "versionInfo": "2.16.0",
+      "versionInfo": "2.16.2",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -484,7 +484,7 @@
     {
       "SPDXID": "SPDXRef-Package-idna",
       "name": "idna",
-      "versionInfo": "3.18",
+      "versionInfo": "3.20",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -494,7 +494,7 @@
     {
       "SPDXID": "SPDXRef-Package-iniconfig",
       "name": "iniconfig",
-      "versionInfo": "2.3.0",
+      "versionInfo": "2.3.1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -514,7 +514,7 @@
     {
       "SPDXID": "SPDXRef-Package-librt",
       "name": "librt",
-      "versionInfo": "0.15.0",
+      "versionInfo": "0.17.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -534,7 +534,7 @@
     {
       "SPDXID": "SPDXRef-Package-markdown",
       "name": "markdown",
-      "versionInfo": "3.10.3",
+      "versionInfo": "3.11.3",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -544,7 +544,7 @@
     {
       "SPDXID": "SPDXRef-Package-markdown-it-py",
       "name": "markdown-it-py",
-      "versionInfo": "4.2.0",
+      "versionInfo": "4.3.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -554,7 +554,7 @@
     {
       "SPDXID": "SPDXRef-Package-markupsafe",
       "name": "markupsafe",
-      "versionInfo": "3.0.3",
+      "versionInfo": "3.0.4",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -594,7 +594,7 @@
     {
       "SPDXID": "SPDXRef-Package-mkdocs-autorefs",
       "name": "mkdocs-autorefs",
-      "versionInfo": "1.4.4",
+      "versionInfo": "1.4.5",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -614,7 +614,7 @@
     {
       "SPDXID": "SPDXRef-Package-mkdocs-material",
       "name": "mkdocs-material",
-      "versionInfo": "9.7.7",
+      "versionInfo": "9.8.2",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -634,7 +634,7 @@
     {
       "SPDXID": "SPDXRef-Package-mkdocstrings",
       "name": "mkdocstrings",
-      "versionInfo": "1.0.6",
+      "versionInfo": "1.0.8",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -644,7 +644,7 @@
     {
       "SPDXID": "SPDXRef-Package-mkdocstrings-python",
       "name": "mkdocstrings-python",
-      "versionInfo": "2.0.5",
+      "versionInfo": "2.0.11",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -674,7 +674,7 @@
     {
       "SPDXID": "SPDXRef-Package-mypy-extensions",
       "name": "mypy-extensions",
-      "versionInfo": "1.1.0",
+      "versionInfo": "1.2.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -754,7 +754,7 @@
     {
       "SPDXID": "SPDXRef-Package-pip",
       "name": "pip",
-      "versionInfo": "26.2.1",
+      "versionInfo": "26.3",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -764,7 +764,7 @@
     {
       "SPDXID": "SPDXRef-Package-pip-api",
       "name": "pip-api",
-      "versionInfo": "0.0.34",
+      "versionInfo": "0.0.35",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -794,7 +794,7 @@
     {
       "SPDXID": "SPDXRef-Package-platformdirs",
       "name": "platformdirs",
-      "versionInfo": "4.11.2",
+      "versionInfo": "4.14.8",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -804,7 +804,7 @@
     {
       "SPDXID": "SPDXRef-Package-pluggy",
       "name": "pluggy",
-      "versionInfo": "1.6.0",
+      "versionInfo": "1.7.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -814,7 +814,7 @@
     {
       "SPDXID": "SPDXRef-Package-proto-plus",
       "name": "proto-plus",
-      "versionInfo": "1.28.3",
+      "versionInfo": "1.29.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -824,7 +824,7 @@
     {
       "SPDXID": "SPDXRef-Package-protobuf",
       "name": "protobuf",
-      "versionInfo": "7.35.1",
+      "versionInfo": "7.36.2",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -834,7 +834,7 @@
     {
       "SPDXID": "SPDXRef-Package-py-serializable",
       "name": "py-serializable",
-      "versionInfo": "2.1.0",
+      "versionInfo": "2.2.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -864,7 +864,7 @@
     {
       "SPDXID": "SPDXRef-Package-pycparser",
       "name": "pycparser",
-      "versionInfo": "3.0",
+      "versionInfo": "3.12",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -874,7 +874,7 @@
     {
       "SPDXID": "SPDXRef-Package-pydantic",
       "name": "pydantic",
-      "versionInfo": "2.13.4",
+      "versionInfo": "2.14.4",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -884,7 +884,7 @@
     {
       "SPDXID": "SPDXRef-Package-pydantic-core",
       "name": "pydantic-core",
-      "versionInfo": "2.46.4",
+      "versionInfo": "2.50.5",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -894,7 +894,7 @@
     {
       "SPDXID": "SPDXRef-Package-pygments",
       "name": "pygments",
-      "versionInfo": "2.20.0",
+      "versionInfo": "2.21.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -914,7 +914,17 @@
     {
       "SPDXID": "SPDXRef-Package-pymdown-extensions",
       "name": "pymdown-extensions",
-      "versionInfo": "11.0.1",
+      "versionInfo": "12.3",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pymdown-extensions",
+      "name": "pymdown-extensions",
+      "versionInfo": "13.1.2",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -924,7 +934,7 @@
     {
       "SPDXID": "SPDXRef-Package-pyparsing",
       "name": "pyparsing",
-      "versionInfo": "3.3.2",
+      "versionInfo": "3.3.3",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -934,7 +944,7 @@
     {
       "SPDXID": "SPDXRef-Package-pytest",
       "name": "pytest",
-      "versionInfo": "9.1.1",
+      "versionInfo": "9.2.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -944,7 +954,7 @@
     {
       "SPDXID": "SPDXRef-Package-pytest-asyncio",
       "name": "pytest-asyncio",
-      "versionInfo": "1.4.0",
+      "versionInfo": "1.5.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -964,7 +974,7 @@
     {
       "SPDXID": "SPDXRef-Package-python-dateutil",
       "name": "python-dateutil",
-      "versionInfo": "2.9.0.post0",
+      "versionInfo": "4.0.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -974,7 +984,7 @@
     {
       "SPDXID": "SPDXRef-Package-pyyaml",
       "name": "pyyaml",
-      "versionInfo": "6.0.3",
+      "versionInfo": "6.0.4",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -1024,17 +1034,7 @@
     {
       "SPDXID": "SPDXRef-Package-ruff",
       "name": "ruff",
-      "versionInfo": "0.16.3",
-      "downloadLocation": "NOASSERTION",
-      "filesAnalyzed": false,
-      "licenseConcluded": "NOASSERTION",
-      "licenseDeclared": "NOASSERTION",
-      "copyrightText": "NOASSERTION"
-    },
-    {
-      "SPDXID": "SPDXRef-Package-six",
-      "name": "six",
-      "versionInfo": "1.17.0",
+      "versionInfo": "0.17.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -1064,7 +1064,7 @@
     {
       "SPDXID": "SPDXRef-Package-starlette",
       "name": "starlette",
-      "versionInfo": "1.6.0",
+      "versionInfo": "1.10.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -1084,7 +1084,7 @@
     {
       "SPDXID": "SPDXRef-Package-tomli",
       "name": "tomli",
-      "versionInfo": "2.4.1",
+      "versionInfo": "2.5.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -1124,7 +1124,17 @@
     {
       "SPDXID": "SPDXRef-Package-typing-inspection",
       "name": "typing-inspection",
-      "versionInfo": "0.4.4",
+      "versionInfo": "0.4.5",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-tzdata",
+      "name": "tzdata",
+      "versionInfo": "2026.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -1154,7 +1164,7 @@
     {
       "SPDXID": "SPDXRef-Package-uvicorn",
       "name": "uvicorn",
-      "versionInfo": "0.52.3",
+      "versionInfo": "0.54.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -1164,7 +1174,7 @@
     {
       "SPDXID": "SPDXRef-Package-watchdog",
       "name": "watchdog",
-      "versionInfo": "6.0.0",
+      "versionInfo": "7.1.1",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -1174,7 +1184,7 @@
     {
       "SPDXID": "SPDXRef-Package-websockets",
       "name": "websockets",
-      "versionInfo": "16.1.1",
+      "versionInfo": "17.4",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -1640,6 +1650,11 @@
     },
     {
       "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Package-pymdown-extensions",
+      "relationshipType": "DESCRIBES"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
       "relatedSpdxElement": "SPDXRef-Package-pyparsing",
       "relationshipType": "DESCRIBES"
     },
@@ -1695,11 +1710,6 @@
     },
     {
       "spdxElementId": "SPDXRef-DOCUMENT",
-      "relatedSpdxElement": "SPDXRef-Package-six",
-      "relationshipType": "DESCRIBES"
-    },
-    {
-      "spdxElementId": "SPDXRef-DOCUMENT",
       "relatedSpdxElement": "SPDXRef-Package-sniffio",
       "relationshipType": "DESCRIBES"
     },
@@ -1741,6 +1751,11 @@
     {
       "spdxElementId": "SPDXRef-DOCUMENT",
       "relatedSpdxElement": "SPDXRef-Package-typing-inspection",
+      "relationshipType": "DESCRIBES"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Package-tzdata",
       "relationshipType": "DESCRIBES"
     },
     {
