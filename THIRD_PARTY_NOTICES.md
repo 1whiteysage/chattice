@@ -14,7 +14,7 @@ GPL/AGPL/SSPL dependency is declared.
 | Package | Version | License |
 | --- | --- | --- |
 | [google-apps-chat](https://github.com/googleapis/google-cloud-python/tree/main/packages/google-apps-chat) | 0.10.9 | Apache-2.0 |
-| [google-auth](https://github.com/googleapis/google-auth-library-python) | 2.62.2 | Apache-2.0 |
+| [google-auth](https://github.com/googleapis/google-auth-library-python) | 2.63.1 | Apache-2.0 |
 | [pydantic](https://github.com/pydantic/pydantic) | 2.13.4 | MIT |
 
 ## Optional extras
